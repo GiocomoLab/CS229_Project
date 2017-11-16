@@ -2,7 +2,7 @@ mouse = 'Aretha';
 session = '0716_1';
 cellname = 'T1C1';
 params = readtable('UniversalParams.xlsx');
-datafile = strcat('C:\Users\mplitt\Dropbox\Malcolms_VR_data\',mouse,'_',session,'_',cellname,'.mat');
+datafile = strcat('~/Dropbox/Malcolms_VR_data/',mouse,'_',session,'_',cellname,'.mat');
 load(datafile);
 
 
