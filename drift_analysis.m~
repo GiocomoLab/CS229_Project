@@ -3,7 +3,7 @@
 
 %% params
 dirMC = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
-dirMP = '~/Dropbox/Malcolms_VR_data/';
+dirMP = '~/Dropbox/Malcolms_VR_data';
 if (exist(dirMC,'dir')>0)
     datafolder = dirMC;
 elseif (exist(dirMP,'dir')>0)
