@@ -19,7 +19,7 @@ load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of
 
 % Take a random subset of non-grid cells to match prevelance
 % use fixed random seed for debugging
-rng(111617); % today's date :P
+rng('default'); 
 
 % get non-grid filenames
 files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
@@ -37,18 +37,6 @@ nongrid_fnames_ds = nongrid_fnames(randperm(length(nongrid_fnames),ngrids));
 
 %% Cross Validation folds
 
-%Make Folds for k-fold cross-validation
-k = 10;
-order = randperm(ngrids*2);
-% fill folds so that they are similar size
-fold_inds = cell(k,1);
-counter = 0;
-while ~isempty(order)
-    i = mod(counter,k)+1;
-    fold_inds{i} = [fold_inds{i}; order(1)];
-    order(1) = [];
-    counter = counter+1;
-end
 
 %% load data
 
@@ -66,28 +54,24 @@ end
 
 
 
-% for each fold
-train_acc = zeros(k,1); test_acc = zeros(k,1)
-for fold = 1:k
-     fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = bool(fold_bool);
-     X_train = X(cell2mat(fold_inds(~fold_bool)),:); 
-     Y_train = Y(cell2mat(fold_inds(~fold_bool)),:);
-     
-     X_test = X(cell2mat(fold_inds(fold_bool)),:);
-     Y_test = Y(cell2mat(fold_inds(fold_bool)),:);
 
-    % set hyperparameters
-    lambda = 1e3;
+%% train and test
+fold_inds = build_folds(size(X,1),size(X,1)); % LOO cross-validation
+modelTypes = {'linear_svm','logistic', 'svm'};
+hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'}};
 
-    % train classifier 
-    %  function call with switch case statement that includes different stuff
-    % for now just implementing ridge logistic regression
+for i = 1:length(modelTypes)
+
+    [Y_train,Y_test,Y_hat_train,Y_hat_test,theta] = run_cv(X,Y,fold_inds,...
+        modelTypes{i},hyperParams{i});
+    eval(['results.' modelTypes '.Y_train = Y_train;']);
+    eval(['results.' modelTypes '.Y_test = Y_test;']);
+    eval(['results.' modelTypes '.Y_ = Y_train;']);
     
+end
 
-% get training error
 
-%  test classifier 
-%  save test error
+%% helper functions
 
 function x = load_features(fname, feats)
 
@@ -119,7 +103,63 @@ end
 
 end
 
-function h = fit_model(train_data,model_type,hyperparameters)
+function fold_inds = build_folds(N,k)
+
+%Make Folds for k-fold cross-validation
+order = randperm(N);
+% fill folds so that they are similar size
+fold_inds = cell(k,1);
+counter = 0;
+while ~isempty(order)
+    i = mod(counter,k)+1;
+    fold_inds{i} = [fold_inds{i}; order(1)];
+    order(1) = [];
+    counter = counter+1;
+end
+
+end
+
+function [Y_train,Y_test,Y_hat_train,Y_hat_test,theta] = run_cv(X,Y,fold_inds,model_type,hyperparameters)
+   
+
+% for each fold
+k = length(fold_inds);  
+Y_hat_train = cell(k,1); Y_hat_test = cell(k,1);
+Y_train = cell(k,1); Y_test = cell(k,1);
+theta = cell(k,1);
+for fold = 1:k
+     fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = bool(fold_bool);
+     X_train = X(cell2mat(fold_inds(~fold_bool)),:); 
+     Y_train(k) = Y(cell2mat(fold_inds(~fold_bool)),:);
+     
+     X_test = X(cell2mat(fold_inds(fold_bool)),:);
+     Y_test(k) = Y(cell2mat(fold_inds(fold_bool)),:);
+
+    % build classifier based on inputs
+%    and test classifiers
+    switch model_type
+        case 'linear_svm'
+            mdl = fitclinear(X_train,Y_train{k},'Regularization',...
+                hyperparameters{1},'Lambda',hyperparameters{2},...
+                'Learner','svm');
+            Y_hat_train(k) = predict(mdl,X_train);
+            Y_hat_test(k) = predict(mdl,X_test);
+            theta(k) = mdl.beta;
+        case 'logistic'
+            mdl = fitclinear(X_train,Y_train{k},'Regularization',...
+                hyperparameters{1},'Lambda',hyperparameters{2},...
+                'Learner','svm');
+            Y_hat_train(k) = predict(mdl,X_train);
+            Y_hat_test(k) = predict(mdl,X_test);
+            theta(k) = mdl.beta;
+        case 'svm'
+            mdl = fitcsvm(X_train,Y_train{k},'Kernel',hyperparameters{1});
+            Y_hat_train(k) = predict(mdl,X_train);
+            Y_hat_test(k) = predict(mdl,X_test);
+    end
+             
+    
+end 
 
 
 end

@@ -37,18 +37,6 @@ nongrid_fnames_ds = nongrid_fnames(randperm(length(nongrid_fnames),ngrids));
 
 %% Cross Validation folds
 
-% %Make Folds for k-fold cross-validation
-% k = 10;
-% order = randperm(ngrids*2);
-% % fill folds so that they are similar size
-% fold_inds = cell(k,1);
-% counter = 0;
-% while ~isempty(order)
-%     i = mod(counter,k)+1;
-%     fold_inds{i} = [fold_inds{i}; order(1)];
-%     order(1) = [];
-%     counter = counter+1;
-% end
 
 %% load data
 
@@ -65,38 +53,29 @@ for i = 1:ngrids
 end
 
 
+
+
 %% train and test
+fold_inds = build_folds(size(X,1),10); % LOO cross-validation
+modelTypes = {'linear_svm','logistic', 'svm'};
+hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'}};
 
-cvsvm = fitclinear(X,Y,'Kfold',ngrids*2,'Regularization','ridge','Lambda',1e4,...
-            'Learner','svm');
-Yhat = kfoldPredict(cvsvm);
-confusionmat(Y,Yhat);
-accuracy = mean(Y==Yhat);
+for i = 1:length(modelTypes)
 
-% % for each fold
-% train_acc = zeros(k,1); test_acc = zeros(k,1);
-% for fold = 1:k
-%      fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = bool(fold_bool);
-%      X_train = X(cell2mat(fold_inds(~fold_bool)),:); 
-%      Y_train = Y(cell2mat(fold_inds(~fold_bool)),:);
-%      
-%      X_test = X(cell2mat(fold_inds(fold_bool)),:);
-%      Y_test = Y(cell2mat(fold_inds(fold_bool)),:);
-% 
-%     % set hyperparameters
-%      lambda = 1e3;
-% 
-%     % train classifier 
-%     %  function call with switch case statement that includes different stuff
-%     % for now just implementing ridge logistic regression
-%     
-%     
-% end 
+    [Y_train,Y_test,Y_hat_train,Y_hat_test,theta] = run_cv(X,Y,fold_inds,...
+        modelTypes{i},hyperParams{i});
+    eval(['results.' modelTypes{i} '.Y_train = Y_train;']);
+    eval(['results.' modelTypes{i} '.Y_test = Y_test;']);
+    eval(['results.' modelTypes{i} '.Y_hat_train = Y_hat_train;']);
+    eval(['results.' modelTypes{i} '.Y_hat_test = Y_hat_test;']);
+    
+    cmat_train = confusionmat(cell2mat(Y_train),cell2mat(Y_hat_train));
+    cmat_test = confusionmat(cell2mat(Y_test),cell2mat(Y_hat_test));
+    eval(['results.' modelTypes{i} '.cmat_train = cmat_train;']);
+    eval(['results.' modelTypes{i} '.cmat_test = cmat_test;']);
+    
+end
 
-% get training error
-
-%  test classifier 
-%  save test error
 
 %% helper functions
 
@@ -130,7 +109,64 @@ end
 
 end
 
-function h = fit_model(train_data,model_type,hyperparameters)
+function fold_inds = build_folds(N,k)
+
+%Make Folds for k-fold cross-validation
+order = randperm(N);
+% fill folds so that they are similar size
+fold_inds = cell(k,1);
+counter = 0;
+while ~isempty(order)
+    i = mod(counter,k)+1;
+    fold_inds{i} = [fold_inds{i}; order(1)];
+    order(1) = [];
+    counter = counter+1;
+end
+
+end
+
+function [Y_train,Y_test,Y_hat_train,Y_hat_test,theta] = run_cv(X,Y,fold_inds,model_type,hyperparameters)
+   
+
+% for each fold
+k = length(fold_inds);  
+Y_hat_train = cell(k,1); Y_hat_test = cell(k,1);
+Y_train = cell(k,1); Y_test = cell(k,1);
+theta = cell(k,1);
+for fold = 1:k
+     fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = logical(fold_bool);
+     X_train = X(cell2mat(fold_inds(~fold_bool)),:); 
+     Y_train{fold} = Y(cell2mat(fold_inds(~fold_bool)),:);
+     
+     X_test = X(cell2mat(fold_inds(fold_bool)),:);
+     Y_test{fold} = Y(cell2mat(fold_inds(fold_bool)),:);
+
+    % build classifier based on inputs
+%    and test classifiers
+    switch model_type
+        case 'linear_svm'
+            mdl = fitclinear(X_train,Y_train{fold},'Regularization',...
+                hyperparameters{1},'Lambda',hyperparameters{2},...
+                'Learner','svm');
+            Y_hat_train{fold} = predict(mdl,X_train);
+            Y_hat_test{fold} = predict(mdl,X_test);
+            theta{fold} = mdl.Beta;
+        case 'logistic'
+            mdl = fitclinear(X_train,Y_train{fold},'Regularization',...
+                hyperparameters{1},'Lambda',hyperparameters{2},...
+                'Learner','svm');
+            Y_hat_train{fold} = predict(mdl,X_train);
+            Y_hat_test{fold} = predict(mdl,X_test);
+            theta{fold} = mdl.Beta;
+        case 'svm'
+            mdl = fitcsvm(X_train,Y_train{fold},'KernelFunction',...
+                hyperparameters{1});
+            Y_hat_train{fold} = predict(mdl,X_train);
+            Y_hat_test{fold} = predict(mdl,X_test);
+    end
+             
+    
+end 
 
 
 end
