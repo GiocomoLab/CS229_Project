@@ -9,12 +9,21 @@ Y_hat_train = cell(k,1); Y_hat_test = cell(k,1);
 Y_train = cell(k,1); Y_test = cell(k,1);
 theta = cell(k,1);
 for fold = 1:k
-     fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = logical(fold_bool);
-     X_train = X(cell2mat(fold_inds(~fold_bool)),:); 
-     Y_train{fold} = Y(cell2mat(fold_inds(~fold_bool)),:);
+%      fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = logical(fold_bool);
+     inds_test = fold_inds{fold}; 
+     if fold ==1
+         inds_train = cell2mat(fold_inds(2:end));
+     elseif fold == k
+         inds_train = cell2mat(fold_inds(1:k-1));
+     else
+         inds_train = cell2mat(fold_inds([1:k-1 k+1:end]));
+     end
      
-     X_test = X(cell2mat(fold_inds(fold_bool)),:);
-     Y_test{fold} = Y(cell2mat(fold_inds(fold_bool)),:);
+     X_train = X(inds_train,:); 
+     Y_train{fold} = Y(inds_train);
+     
+     X_test = X(inds_test,:);
+     Y_test{fold} = Y(inds_test);
 
     % build classifier based on inputs
 %    and test classifiers
