@@ -44,7 +44,7 @@ for fold = 1:k
             theta{fold} = mdl.Beta;
         case 'svm'
             mdl = fitcsvm(X_train,Y_train{fold},'KernelFunction',...
-                hyperparameters{1});
+                hyperparameters{1},'KernelScale','auto');
             Y_hat_train{fold} = predict(mdl,X_train);
             Y_hat_test{fold} = predict(mdl,X_test);
     end
