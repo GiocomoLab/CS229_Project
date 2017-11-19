@@ -35,9 +35,6 @@ nongrid_fnames_ds = nongrid_fnames(randperm(length(nongrid_fnames),ngrids));
 % 
 
 
-%% Cross Validation folds
-
-
 %% load data
 
 % load feature structures and concatenate into design matrix
