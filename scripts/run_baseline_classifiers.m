@@ -70,7 +70,7 @@ tests = {{'grid','nongrid'}};
 % forward search order
 % forward_search_order = {{'fr'},{'fr','fr_dft_abs'}, {'fr','fr_dft_abs','ccorr_peak'},....
 %    {'fr','fr_dft_abs','ccorr_peak','mean_fr_ccorr'}};
-forward_search_order = {{'fr'}};
+forward_search_order = {{'fr','fr_dft_abs'}};
 % which classifiers to run
 % modelTypes = {'linear_svm','logistic', 'svm'};
 modelTypes = {'svm'};
@@ -119,7 +119,7 @@ true_label = true_label(sort_idx);
 classifier_label = classifier_label(sort_idx);
 for i = 1:size(fold_inds_save,1)
     h = figure('Visible','off');
-    plot(1:2:399,X(i,:));
+    plot(1:2:399,X(i,1:200));
     title(sprintf('true label=%d, classifier label=%d',true_label(i),classifier_label(i)));
     saveas(h,sprintf('sanity_check_plots/%d.png',i),'png')
 end
