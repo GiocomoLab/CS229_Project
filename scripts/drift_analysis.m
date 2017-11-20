@@ -1,6 +1,8 @@
 % drift analysis
 % MGC 11/12/17
 
+% git test
+
 %% params
 dirMC = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
 dirMP = '~/Dropbox/Malcolms_VR_data/';

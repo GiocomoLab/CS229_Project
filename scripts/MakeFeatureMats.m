@@ -3,48 +3,58 @@
 
 %% params
 
-dirMC = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
-dirMP = '~/Dropbox/Malcolms_VR_data/';
-if (exist(dirMC,'dir')>0)
-    datafolder = dirMC;
-elseif (exist(dirMP,'dir')>0)
-    datafolder = dirMP;
+% get data folder
+mp_prefix = '~/Dropbox/Malcolms_VR_Data/';
+mc_prefix1 = '/Users/malcg/Dropbox/Work/Malcolms_VR_data/';
+mc_prefix2 = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
+if (exist(mc_prefix1,'dir')>0)
+    datafolder = mc_prefix1;
+elseif (exist(mc_prefix2,'dir')>0)
+    datafolder = mc_prefix2;
+elseif (exist(mp_prefix,'dir')>0)
+    datafolder = mp_prefix;
 end
-% datafolder = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
 
-
-A = readtable('allCells.csv');
-A = A(strcmp(A.SessionTypeVR,'gain_manip'),:);
-params = readtable('UniversalParams.xlsx');
+A = readtable('../allCells.csv');
+A = A(~strcmp(A.SessionTypeVR,'optic_flow_track'),:);
+params = readtable('../UniversalParams.xlsx');
 num_lags = 10; % for cross corr calculations
 
 % thresholds
-thresh.border = 0.523;
-thresh.grid = 0.349;
-thresh.inter = 10;
+thresh.border = 0.523; % border score
+thresh.grid = 0.349; % grid score
+thresh.inter = 10; % firing rate to identify interneurons
 
 % identify cell types
-inter = A.MeanRateOF > 10;
+inter = A.MeanRateOF > thresh.inter;
 grid = find(A.GridScore > thresh.grid & ~inter);
 border = find(A.BorderScore > thresh.border & ~ inter);
 
+% take one recording from each unique grid and border cell.
+% might want to make it so that it's not always the first recording from
+% each cell, but let's do this for now.
+[~,uniq_idx_grid] = unique(A.UniqueID(grid));
+[~,uniq_idx_border] = unique(A.UniqueID(border));
+grid = grid(uniq_idx_grid);
+border = border(uniq_idx_border);
+
 grid_fnames = cell(numel(grid),1);
 for g = 1:numel(grid)
-    mouse = A.Mouse{grid(g)};
+    uniqueID = A.UniqueID{grid(g)};
     session = A.SessionVR{grid(g)};
     cellname = A.Cell{grid(g)};
-    grid_fnames{g} = sprintf('FeatStruct_%s_%s_%s.mat',mouse,session,cellname);
+    grid_fnames{g} = sprintf('FeatStruct_%s_%s_%s.mat',uniqueID,session,cellname);
 end
 
 border_fnames = cell(numel(border),1);
 for b = 1:numel(border)
-    mouse = A.Mouse{border(b)};
+    uniqueID = A.UniqueID{border(b)};
     session = A.SessionVR{border(b)};
     cellname = A.Cell{border(b)};
-    border_fnames{b} = sprintf('FeatStruct_%s_%s_%s.mat',mouse,session,cellname);
+    border_fnames{b} = sprintf('FeatStruct_%s_%s_%s.mat',uniqueID,session,cellname);
 end
 
-save(strcat(datafolder,'FeatureMats/params.mat'), 'thresh','border_fnames','grid_fnames');
+save(strcat(datafolder,'FeatureMats/params.mat'),'thresh','border_fnames','grid_fnames');
 %% analyze drift: grid cells
 % lag_grid = nan(size(grid));
 lag = nan(numel(A.UniqueID),1);
@@ -52,14 +62,15 @@ for j = 1:numel(A.UniqueID)
     
 %     featStruct = struct([]);
     featStruct.id = A.UniqueID(j);
-    featStruct.grid = double(A.GridScore(j)>thresh.grid);
-    featStruct.border = double(A.BorderScore(j) > thresh.border);
+    featStruct.grid = double(A.GridScore(j)>thresh.grid & A.MeanRateOF < thresh.inter);
+    featStruct.border = double(A.BorderScore(j) > thresh.border & A.MeanRateOF < thresh.inter);
     featStruct.mean_rate = A.MeanRateOF(j);
     
+    uniqueID = A.UniqueID{j};
     mouse = A.Mouse{j};
     session = A.SessionVR{j};
     cellname = A.Cell{j};
-    fname = sprintf('%s_%s_%s.mat',mouse,session,cellname);
+    fname = sprintf('%s_%s_%s.mat',uniqueID,session,cellname);
     load(sprintf('%s%s_%s_%s.mat',datafolder,mouse,session,cellname));
     
     
