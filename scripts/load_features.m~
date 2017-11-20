@@ -1,0 +1,49 @@
+function [X, Y] = load_features(datafolder,class_fnames)
+
+
+for i = 1:length(fnames)
+    for f = 1:
+X = []; Y = []; feats = {'fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'};
+
+for i = 1:ngrids
+    X = [X; load_features(fullfile(datafolder,grid_fnames{i}),feats)];
+    Y = [Y;1];
+    
+    X = [X; load_features(fullfile(datafolder,nongrid_fnames{i}),feats)];
+    Y = [Y;0];
+        
+end
+
+
+
+
+function x = load_single_sub(fname, feats)
+
+if isempty(feats)
+    feats = {'fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'};
+end
+
+load(fname);
+x=[];
+
+if sum(strcmp(feats,'fr'))>0
+    fr = featStruct.firing_rate;
+    fr = (fr-min(fr))/max(fr);
+    x = [x fr];
+end
+
+if sum(strcmp(feats,'mean_fr_ccorr'))>0
+    x = [x featStruct.mean_fr_ccorr];
+end
+
+if sum(strcmp(feats,'ccorr_peak'))>0
+    x = [x featStruct.max_lag];
+end
+
+if sum(strcmp(feats,'fr_dft_abs'))>0
+    fr = featStruct.firing_rate;
+    x = [x abs(fft(fr))];
+end
+
+end
+
