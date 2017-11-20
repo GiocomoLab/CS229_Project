@@ -14,14 +14,16 @@ rng('default');
 
 
 get_fnames;
+
 % get all files names
+files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
+files = {files(:).name}';
 
 
 >>>>>>> MalcolmBranch
 
 % comparisons to run
-tests = {{'grid','nongrid'}};
-% forward search order
+tests = {{'gb', 'nongb'},{'grid','nongrid'},{'border','nonborder'}};
 forward_search_order = {{'mean_fr','fr_dft_abs'},...
     {'mean_fr','fr','fr_dft_abs'},{'mean_fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'},...
     {'mean_fr','fr','fr_dft_abs','ccorr_peak','fr_dft_abs'}};
@@ -29,6 +31,7 @@ forward_search_order = {{'mean_fr','fr_dft_abs'},...
 modelTypes = {'linear_svm','logistic', 'svm','gda'};
 % hyperparams for each calssifier
 hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'},{},{}};
+
 results = cell(length(tests),length(forward_search_order));
 fold_inds_save = cell(length(tests),1);
 for t = 1:length(tests)
@@ -95,6 +98,8 @@ for i =  1:length(tests)
 end
 
 save baseline_classifier_results.mat results fold_inds train_acc test_acc
+
+
 
 if make_plots
     % Sanity check: look at correctly and incorrectly classified cells

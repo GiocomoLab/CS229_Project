@@ -38,7 +38,7 @@ nongrid_fnames_ds = nongrid_fnames(randperm(length(nongrid_fnames),ngrids));
 %% load data
 
 % load feature structures and concatenate into design matrix
-X = []; Y = []; feats = {'fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'};
+X = []; Y = []; feats = {'fr'}; %,'mean_fr_ccorr','ccorr_peak','fr_dft_abs'};
 
 for i = 1:ngrids
     X = [X; load_features(fullfile(datafolder,grid_fnames{i}),feats)];
