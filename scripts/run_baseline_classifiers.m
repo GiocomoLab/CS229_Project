@@ -2,6 +2,9 @@
 
 get_data_folder;
 
+% whether or not to plot raw firing rate maps
+make_plots = 0;
+
 % Get all grid cells  
 load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of grid cells
 
@@ -105,21 +108,22 @@ for t = 1:length(tests)
 end
 
 
-
-% Sanity check: look at correctly and incorrectly classified cells
-fold_inds_save = fold_inds_save{1};
-[~,sort_idx]=sort(fold_inds_save);
-true_label = nan(size(fold_inds_save));
-classifier_label = nan(size(fold_inds_save));
-for i = 1:size(fold_inds_save,1)
-    true_label(i) = results{1,1}.svm.Y_test{i};
-    classifier_label(i) = results{1,1}.svm.Y_hat_test{i};
-end
-true_label = true_label(sort_idx);
-classifier_label = classifier_label(sort_idx);
-for i = 1:size(fold_inds_save,1)
-    h = figure('Visible','off');
-    plot(1:2:399,X(i,1:200));
-    title(sprintf('true label=%d, classifier label=%d',true_label(i),classifier_label(i)));
-    saveas(h,sprintf('sanity_check_plots/%d.png',i),'png')
+if make_plots
+    % Sanity check: look at correctly and incorrectly classified cells
+    fold_inds_save = fold_inds_save{1};
+    [~,sort_idx]=sort(fold_inds_save);
+    true_label = nan(size(fold_inds_save));
+    classifier_label = nan(size(fold_inds_save));
+    for i = 1:size(fold_inds_save,1)
+        true_label(i) = results{1,1}.svm.Y_test{i};
+        classifier_label(i) = results{1,1}.svm.Y_hat_test{i};
+    end
+    true_label = true_label(sort_idx);
+    classifier_label = classifier_label(sort_idx);
+    for i = 1:size(fold_inds_save,1)
+        h = figure('Visible','off');
+        plot(1:2:399,X(i,1:200));
+        title(sprintf('true label=%d, classifier label=%d',true_label(i),classifier_label(i)));
+        saveas(h,sprintf('sanity_check_plots/%d.png',i),'png')
+    end
 end
