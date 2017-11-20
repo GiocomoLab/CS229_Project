@@ -55,7 +55,7 @@ for t = 1:length(tests)
 
 end
 
-<<<<<<< HEAD
+
 train_acc = zeros(3,5,5); test_acc = zeros(3,5,5);
 for i =  1:length(tests)
     for j = 1:length(forward_search_order)
@@ -94,7 +94,7 @@ for i =  1:length(tests)
 end
 
 save baseline_classifier_results.mat results fold_inds train_acc test_acc
-=======
+
 
 
 % Sanity check: look at correctly and incorrectly classified cells
@@ -114,4 +114,3 @@ for i = 1:size(fold_inds_save,1)
     title(sprintf('true label=%d, classifier label=%d',true_label(i),classifier_label(i)));
     saveas(h,sprintf('sanity_check_plots/%d.png',i),'png')
 end
->>>>>>> MalcolmBranch
