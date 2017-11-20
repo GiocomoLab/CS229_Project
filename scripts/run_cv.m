@@ -9,6 +9,7 @@ Y_hat_train = cell(k,1); Y_hat_test = cell(k,1);
 Y_train = cell(k,1); Y_test = cell(k,1);
 theta = cell(k,1);
 for fold = 1:k
+    disp(fold)
 %      fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = logical(fold_bool);
      inds_test = fold_inds{fold}; 
      if fold ==1
@@ -47,6 +48,31 @@ for fold = 1:k
                 hyperparameters{1},'KernelScale','auto');
             Y_hat_train{fold} = predict(mdl,X_train);
             Y_hat_test{fold} = predict(mdl,X_test);
+            
+        case 'mc_linear_svm'
+            t = templateLinear('Learner','svm',....
+                'Regularization',hyperparameters{1},'Lambda',hyperparameters{2});
+            
+            mdl = fitcecoc(X_train,Y_train{fold},'Learners',t);
+            Y_hat_train{fold} = predict(mdl,X_train);
+            Y_hat_test{fold} = predict(mdl,X_test);
+%             theta{fold} = mdl.Beta;
+            
+        case 'mc_svm'
+            t = templateSVM('Standardize',1,'KernelFunction',hyperparameters{1},...
+                'KernelScale','auto');
+            mdl = fitcecoc(X_train,Y_train{fold},'Learners',t);
+            
+            Y_hat_train{fold} = predict(mdl,X_train);
+            Y_hat_test{fold} = predict(mdl,X_test);
+            
+           
+        case 'softmax'
+            net = trainSoftmaxLayer(X_train',Y2T(Y_train{fold}));
+            net(X_train')
+            Y_hat_train{fold} = net(X_train');
+            Y_hat_test{fold} = net(X_test');
+            
     end
              
     
@@ -54,3 +80,26 @@ end
 
 
 end
+
+
+function T = Y2T(Y)
+
+numClasses = max(Y);
+
+T = zeros(numClasses,length(Y));
+for c = 1:numClasses
+    T(c,:) = double(Y==c);
+end
+end
+
+function Y = T2Y(T)
+
+numClasses = size(T,1);
+dummyY = [];
+for c = 1:numClasses
+    dummyY = [dummyY; (c-1)*ones(size(T,2),1)];
+end
+
+Y = squeeze(dummyY(logical(T)))';
+end
+

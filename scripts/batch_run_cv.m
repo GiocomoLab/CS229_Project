@@ -12,6 +12,8 @@ for i = 1:length(modelTypes)
     eval(['results.' modelTypes{i} '.Y_hat_test = Y_hat_test;']);
     eval(['results.' modelTypes{i} '.theta = theta;']);
 
+%     size(cell2mat(Y_test))
+%     Y_hat_test
     
     cmat_train = confusionmat(cell2mat(Y_train),cell2mat(Y_hat_train));
     cmat_test = confusionmat(cell2mat(Y_test),cell2mat(Y_hat_test));
