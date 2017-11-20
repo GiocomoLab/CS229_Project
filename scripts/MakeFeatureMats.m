@@ -59,22 +59,22 @@ save(strcat(datafolder,'FeatureMats/params.mat'),'thresh','border_fnames','grid_
 % lag_grid = nan(size(grid));
 lag = nan(numel(A.UniqueID),1);
 for j = 1:numel(A.UniqueID)
-    
+
 %     featStruct = struct([]);
     featStruct.id = A.UniqueID(j);
     featStruct.grid = double(A.GridScore(j)>thresh.grid & A.MeanRateOF < thresh.inter);
     featStruct.border = double(A.BorderScore(j) > thresh.border & A.MeanRateOF < thresh.inter);
     featStruct.mean_rate = A.MeanRateOF(j);
-    
+
     uniqueID = A.UniqueID{j};
     mouse = A.Mouse{j};
     session = A.SessionVR{j};
     cellname = A.Cell{j};
     fname = sprintf('%s_%s_%s.mat',uniqueID,session,cellname);
     load(sprintf('%s%s_%s_%s.mat',datafolder,mouse,session,cellname));
-    
-    
-    
+
+
+
 
     % position, time and trial data
     % only include A period
@@ -83,7 +83,7 @@ for j = 1:numel(A.UniqueID)
     dt = celldata.bl.dt{1};
     trial = celldata.bl.trial{1};
     spike_t = celldata.bl.spike_t{1};
-    
+
     % throw out last trial (incomplete for some data)
     posx = posx(trial<max(trial));
     post = post(trial<max(trial));
@@ -100,7 +100,7 @@ for j = 1:numel(A.UniqueID)
     % compute firing rate
     firing_rate = calculateSmoothedFiringRate(idx,posx,dt,params);
     featStruct.firing_rate = firing_rate;
-    
+
     % compute single trial cross-correlations
     fr_corr = nan(max(trial)-1,num_lags*2+1);
     for i = 2:max(trial)
@@ -125,12 +125,12 @@ for j = 1:numel(A.UniqueID)
     % get cross correlation peak
     x = -num_lags*params.BinSize:params.BinSize:num_lags*params.BinSize;
     [~,max_lag] = max(mean(fr_corr));
-    
+
     featStruct.max_lag = x(max_lag);
     featStruct.mean_fr_ccorr = nanmean(fr_corr);
-    
-   
+
+
     save(strcat(datafolder,'FeatureMats/FeatStruct_' ,fname), 'featStruct');
-    
+
     fprintf('%d/%d %s %s %s\n',j,numel(A.UniqueID),mouse,session,cellname);
 end
