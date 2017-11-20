@@ -42,7 +42,7 @@ for t = 1:length(tests)
     
 end
 
-train_acc = zeros(3,5,5); test_acc = zeros(3,5,5);
+train_acc = zeros(3,5,4); test_acc = zeros(3,5,4);
 for i =  1:length(tests)
     for j = 1:length(forward_search_order)
         cmat_train = results{i,j}.logistic.cmat_train;

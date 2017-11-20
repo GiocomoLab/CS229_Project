@@ -14,12 +14,13 @@ get_fnames;
 % comparisons to run
 tests = {{'gb','nongb'},{'grid','nongrid'},{'border','nonborder'}};
 % forward search order
-forward_search_order = {{'mean_fr'},{'mean_fr','fr'},{'mean_fr','fr','fr_dft_abs'},...
-    {'mean_fr','fr','fr_dft_abs','ccorr_peak'},{'mean_fr','fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'}};
+forward_search_order = {{'mean_fr','fr_dft_abs'},...
+    {'mean_fr','fr','fr_dft_abs'},{'mean_fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'},...
+    {'mean_fr','fr','fr_dft_abs','ccorr_peak','fr_dft_abs'}};
 % which classifiers to run
-modelTypes = {'linear_svm','logistic', 'svm'};
+modelTypes = {'linear_svm','logistic', 'svm','gda'};
 % hyperparams for each calssifier
-hyperParams = {{'ridge','auto'},{'ridge','auto'},{'rbf'}};
+hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'},{},{}};
 results = cell(length(tests),length(forward_search_order));
 for t = 1:length(tests)
     eval(['class0_fnames = ' tests{t}{1} '_fnames;']);
@@ -41,30 +42,41 @@ for t = 1:length(tests)
     
 end
 
-train_acc = zeros(3,5,3); test_acc = zeros(3,4,3);
+train_acc = zeros(3,5,4); test_acc = zeros(3,5,5);
 for i =  1:length(tests)
     for j = 1:length(forward_search_order)
         cmat_train = results{i,j}.logistic.cmat_train;
         cmat_test = results{i,j}.logistic.cmat_test;
         
-        train_acc{i,j,1} = sum(diag(cmat_train))/sum(sum(cmat_train));
-        train_acc{i,j,1} = sum(diag(cmat_test))/sum(sum(cmat_test));
+        train_acc(i,j,1) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,1) = sum(diag(cmat_test))/sum(sum(cmat_test));
             
         
         cmat_train = results{i,j}.linear_svm.cmat_train;
         cmat_test = results{i,j}.linear_svm.cmat_test;
         
-        train_acc{i,j,2} = sum(diag(cmat_train))/sum(sum(cmat_train));
-        train_acc{i,j,2} = sum(diag(cmat_test))/sum(sum(cmat_test));
+        train_acc(i,j,2) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,2) = sum(diag(cmat_test))/sum(sum(cmat_test));
 
         
         cmat_train = results{i,j}.svm.cmat_train;
         cmat_test = results{i,j}.svm.cmat_test;
         
-        train_acc{i,j,3} = sum(diag(cmat_train))/sum(sum(cmat_train));
-        train_acc{i,j,3} = sum(diag(cmat_test))/sum(sum(cmat_test));
+        train_acc(i,j,3) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,3) = sum(diag(cmat_test))/sum(sum(cmat_test));
         
+        cmat_train = results{i,j}.gda.cmat_train;
+        cmat_test = results{i,j}.gda.cmat_test;
+        
+        train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+%         cmat_train = results{i,j}.qda.cmat_train;
+%         cmat_test = results{i,j}.qda.cmat_test;
+%         
+%         train_acc(i,j,5) = sum(diag(cmat_train))/sum(sum(cmat_train));
+%         test_acc(i,j,5) = sum(diag(cmat_test))/sum(sum(cmat_test));
     end
 end
 
-save baseline_classifier_results.mat results fold_inds train_acc test
+save baseline_classifier_results.mat results fold_inds train_acc test_acc

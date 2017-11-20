@@ -5,10 +5,10 @@ get_data_folder;
 get_fnames;
 
 
-feats = {'fr_dft_abs'};
+feats = {'mean_fr','fr_dft_abs'};
 
-modelTypes={'mc_linear_svm','mc_svm'};
-hyperParams = {{'ridge',1e2},{'rbf'}};
+modelTypes={'gda','mc_linear_svm','mc_svm'};
+hyperParams = {{},{'ridge',1e2},{'rbf'}};
 
 m = length(grid_fnames) + length(border_fnames) + length(nongb_fnames_ds);
 fold_inds = build_folds(m,m);
