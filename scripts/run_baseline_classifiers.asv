@@ -110,6 +110,6 @@ fold_inds_save = fold_inds_save{1};
 true_label = nan(size(fold_inds_save));
 classifier_label = nan(size(fold_inds_save));
 for i = 1:size(fold_inds_save,1)
-    true_label(i) = results{1,1}.svm.Y_test{i};
-    classifier_label(i) = results{1,1}.svm.Y_hat_test{i};
+    %true_label = results{1,1}.svm.Y_test{i};
+    classifier_label = results{1,1}.svm.Y_hat_test{i};
 end

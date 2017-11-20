@@ -4,9 +4,9 @@
 %% params
 
 % get data folder
-mp_prefix = '~/Dropbox/Malcolms_VR_Data/';
-mc_prefix1 = '/Users/malcg/Dropbox/Work/Malcolms_VR_data/';
-mc_prefix2 = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
+mp_prefix = '~/Dropbox/Malcolms_VR_Data';
+mc_prefix1 = '/Users/malcg/Dropbox/Work/Malcolms_VR_data';
+mc_prefix2 = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data';
 if (exist(mc_prefix1,'dir')>0)
     datafolder = mc_prefix1;
 elseif (exist(mc_prefix2,'dir')>0)
@@ -40,7 +40,7 @@ border = border(uniq_idx_border);
 
 grid_fnames = cell(numel(grid),1);
 for g = 1:numel(grid)
-    uniqueID = A.UniqueID{grid(g)};
+    uniqueID = A.Mouse{grid(g)};
     session = A.SessionVR{grid(g)};
     cellname = A.Cell{grid(g)};
     grid_fnames{g} = sprintf('FeatStruct_%s_%s_%s.mat',uniqueID,session,cellname);
@@ -48,13 +48,13 @@ end
 
 border_fnames = cell(numel(border),1);
 for b = 1:numel(border)
-    uniqueID = A.UniqueID{border(b)};
+    uniqueID = A.Mouse{border(b)};
     session = A.SessionVR{border(b)};
     cellname = A.Cell{border(b)};
     border_fnames{b} = sprintf('FeatStruct_%s_%s_%s.mat',uniqueID,session,cellname);
 end
 
-save(strcat(datafolder,'FeatureMats/params.mat'),'thresh','border_fnames','grid_fnames');
+save(strcat(datafolder,'/params.mat'),'thresh','border_fnames','grid_fnames');
 %% analyze drift: grid cells
 % lag_grid = nan(size(grid));
 lag = nan(numel(A.UniqueID),1);
