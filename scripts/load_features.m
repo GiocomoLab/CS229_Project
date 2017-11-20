@@ -29,7 +29,7 @@ x=[];
 
 if sum(strcmp(feats,'fr'))>0
     fr = featStruct.firing_rate;
-    fr = (fr-min(fr))/max(fr);
+    fr = (fr-min(fr))/(max(fr)-min(fr));
     x = [x fr];
 end
 
@@ -43,7 +43,12 @@ end
 
 if sum(strcmp(feats,'fr_dft_abs'))>0
     fr = featStruct.firing_rate;
-    x = [x abs(fft(fr))];
+    fr_fft = abs(fft(fr));
+    x = [x fr_fft(1:floor(length(fr_fft)/2))];
+end
+
+if sum(strcmp(feats,'mean_fr'))>0
+    x = [x featStruct.mean_rate];
 end
 
 end

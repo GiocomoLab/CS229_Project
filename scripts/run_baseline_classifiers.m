@@ -9,53 +9,18 @@ load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of
 % use fixed random seed for debugging
 rng('default'); 
 
-% get all files names
-files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
-files = {files(:).name}';
-
-% find grid cells
-grid_inds = zeros(size(files));
-ngrids = length(grid_fnames);
-for g = 1:length(grid_fnames)
-    grid_inds = grid_inds + strcmp(files,grid_fnames{g});
-end
-
-% find border cells
-border_inds = zeros(size(files));
-nborders = length(border_fnames);
-for b = 1:length(border_fnames)
-    border_inds = border_inds + strcmp(files,border_fnames{b});
-end
-
-% non grid cells
-nongrid_fnames = files(~grid_inds);
-
-% non border cells 
-nonborder_fnames = files(~border_inds);
-
-% get all grid | border cells
-gb_inds = logical(grid_inds+border_inds);
-gb_fnames = files(gb_inds);
-
-% non grid | border cells
-nongb_fnames = files(~gb_inds);
-
-% downsample non-functional cell types
-
-nongrid_fnames_ds = nongrid_fnames(randperm(length(nongrid_fnames),length(grid_fnames)));
-nonborder_fnames_ds = nonborder_fnames(randperm(length(nonborder_fnames),length(border_fnames)));
-nongb_fnames_ds = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));
-
+get_fnames;
 
 % comparisons to run
 tests = {{'gb','nongb'},{'grid','nongrid'},{'border','nonborder'}};
 % forward search order
-forward_search_order = {{'fr'},{'fr','fr_dft_abs'}, {'fr','fr_dft_abs','ccorr_peak'},....
-    {'fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'}};
+forward_search_order = {{'mean_fr','fr_dft_abs'},...
+    {'mean_fr','fr','fr_dft_abs'},{'mean_fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'},...
+    {'mean_fr','fr','fr_dft_abs','ccorr_peak','fr_dft_abs'}};
 % which classifiers to run
-modelTypes = {'linear_svm','logistic', 'svm'};
+modelTypes = {'linear_svm','logistic', 'svm','gda'};
 % hyperparams for each calssifier
-hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'}};
+hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'},{},{}};
 results = cell(length(tests),length(forward_search_order));
 for t = 1:length(tests)
     eval(['class0_fnames = ' tests{t}{1} '_fnames;']);
@@ -66,6 +31,7 @@ for t = 1:length(tests)
     for f = 1:length(forward_search_order)
         feats = forward_search_order{f};
         [X, Y] = load_features(datafolder,{class0_fnames,class1_fnames},feats);
+        
         single_run_results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
         single_run_results.groups = tests{t};
         
@@ -75,3 +41,42 @@ for t = 1:length(tests)
     end
     
 end
+
+train_acc = zeros(3,5,5); test_acc = zeros(3,5,5);
+for i =  1:length(tests)
+    for j = 1:length(forward_search_order)
+        cmat_train = results{i,j}.logistic.cmat_train;
+        cmat_test = results{i,j}.logistic.cmat_test;
+        
+        train_acc(i,j,1) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,1) = sum(diag(cmat_test))/sum(sum(cmat_test));
+            
+        
+        cmat_train = results{i,j}.linear_svm.cmat_train;
+        cmat_test = results{i,j}.linear_svm.cmat_test;
+        
+        train_acc(i,j,2) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,2) = sum(diag(cmat_test))/sum(sum(cmat_test));
+
+        
+        cmat_train = results{i,j}.svm.cmat_train;
+        cmat_test = results{i,j}.svm.cmat_test;
+        
+        train_acc(i,j,3) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,3) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+        cmat_train = results{i,j}.gda.cmat_train;
+        cmat_test = results{i,j}.gda.cmat_test;
+        
+        train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+%         cmat_train = results{i,j}.qda.cmat_train;
+%         cmat_test = results{i,j}.qda.cmat_test;
+%         
+%         train_acc(i,j,5) = sum(diag(cmat_train))/sum(sum(cmat_train));
+%         test_acc(i,j,5) = sum(diag(cmat_test))/sum(sum(cmat_test));
+    end
+end
+
+save baseline_classifier_results.mat results fold_inds train_acc test_acc

@@ -11,7 +11,7 @@ for i = 1:length(modelTypes)
     eval(['results.' modelTypes{i} '.Y_hat_train = Y_hat_train;']);
     eval(['results.' modelTypes{i} '.Y_hat_test = Y_hat_test;']);
     eval(['results.' modelTypes{i} '.theta = theta;']);
-
+    eval(['results.' modelTypes{i} '.hyperparams = hyperParams{i};']);
 %     size(cell2mat(Y_test))
 %     Y_hat_test
     

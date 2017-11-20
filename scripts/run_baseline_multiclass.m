@@ -7,7 +7,7 @@ get_fnames;
 
 feats = {'fr_dft_abs'};
 
-modelTypes={'mc_linear_svm','mc_svm'}; %,'softmax'};
+modelTypes={'mc_linear_svm','mc_svm'};
 hyperParams = {{'ridge',1e2},{'rbf'}};
 
 m = length(grid_fnames) + length(border_fnames) + length(nongb_fnames_ds);
@@ -17,4 +17,4 @@ fold_inds = build_folds(m,m);
 results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
 
 
-save 'baseline_multiclass_classifiers.mat' results
+save 'baseline_multiclass_classifiers.mat' results fold_inds
