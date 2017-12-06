@@ -9,7 +9,9 @@ Y_hat_train = cell(k,1); Y_hat_test = cell(k,1);
 Y_train = cell(k,1); Y_test = cell(k,1);
 theta = cell(k,1);
 for fold = 1:k
-    disp(fold)
+     if mod(fold,10)==1
+         fprintf('.');
+     end
 %      fold_bool = zeros(k,1); fold_bool(k) = 1; fold_bool = logical(fold_bool);
      inds_test = fold_inds{fold}; 
      if fold ==1

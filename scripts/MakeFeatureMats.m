@@ -4,28 +4,27 @@
 %% params
 
 % get data folder
-mp_prefix = '~/Dropbox/Malcolms_VR_Data/';
-mc_prefix1 = '/Users/malcg/Dropbox/Work/Malcolms_VR_data/';
-mc_prefix2 = '/Users/malcolmcampbell/Dropbox/Work/Malcolms_VR_data/';
-if (exist(mc_prefix1,'dir')>0)
-    datafolder = mc_prefix1;
-elseif (exist(mc_prefix2,'dir')>0)
-    datafolder = mc_prefix2;
-elseif (exist(mp_prefix,'dir')>0)
-    datafolder = mp_prefix;
-end
+get_data_folder;
 
+% load table with recording information
 A = readtable('../allCells.csv');
-A = A(~strcmp(A.SessionTypeVR,'optic_flow_track'),:);
+A = A(strcmp(A.SessionTypeVR,'gain_manip'),:);
+
+% which gain manipulation to use
+gain_value = 0.5;
+
+% universal params
 params = readtable('../UniversalParams.xlsx');
-num_lags = 10; % for cross corr calculations
+
+% for cross corr calculations
+num_lags = 10; 
 
 % thresholds
 thresh.border = 0.523; % border score
 thresh.grid = 0.349; % grid score
 thresh.inter = 10; % firing rate to identify interneurons
 
-% identify cell types
+%% identify cell types
 inter = A.MeanRateOF > thresh.inter;
 grid = find(A.GridScore > thresh.grid & ~inter);
 border = find(A.BorderScore > thresh.border & ~ inter);
@@ -54,7 +53,7 @@ for b = 1:numel(border)
     border_fnames{b} = sprintf('FeatStruct_%s_%s_%s.mat',uniqueID,session,cellname);
 end
 
-save(strcat(datafolder,'FeatureMats/params.mat'),'thresh','border_fnames','grid_fnames');
+save(strcat(datafolder,'/params.mat'),'thresh','border_fnames','grid_fnames');
 %% analyze drift: grid cells
 % lag_grid = nan(size(grid));
 lag = nan(numel(A.UniqueID),1);
@@ -130,7 +129,7 @@ for j = 1:numel(A.UniqueID)
     featStruct.mean_fr_ccorr = nanmean(fr_corr);
 
 
-    save(strcat(datafolder,'FeatureMats/FeatStruct_' ,fname), 'featStruct');
+    save(strcat(datafolder,'/FeatStruct_' ,fname), 'featStruct');
 
     fprintf('%d/%d %s %s %s\n',j,numel(A.UniqueID),mouse,session,cellname);
 end

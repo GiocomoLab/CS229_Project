@@ -51,5 +51,9 @@ if sum(strcmp(feats,'mean_fr'))>0
     x = [x featStruct.mean_rate];
 end
 
+if sum(strcmp(feats,'cross_corr'))>0
+    x = [x featStruct.cross_corr];
+end
+
 end
 
