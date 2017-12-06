@@ -11,6 +11,7 @@ save_results = 0;
 
 % get data folder
 get_data_folder;
+% datafolder = strcat(datafolder,'FeatureMats/gain_decrease_and_gain_increase');
 datafolder = strcat(datafolder,'FeatureMats/gain_increase');
 
 % get file names for all cell classes
@@ -19,11 +20,12 @@ get_fnames;
 % comparisons to run
 tests = {{'grid', 'border'}};
 % features to use (forward search)
+% forward_search_order = {{'cross_corr_gd'},{'cross_corr_gi'},{'cross_corr_gd','cross_corr_gi'}};
 forward_search_order = {{'cross_corr'}};
 % which classifiers to run
-modelTypes = {'logistic','linear_svm', 'svm'};
+modelTypes = {'logistic','linear_svm','svm'};
 % hyperparams for each classifier
-hyperParams = {{'ridge',1e4},{'ridge',1e4},{'rbf'}};
+hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'}};
 
 %% train classifiers
 

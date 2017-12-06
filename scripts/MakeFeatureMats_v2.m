@@ -14,7 +14,7 @@ A = A(strcmp(A.SessionTypeVR,'gain_manip'),:);
 celltypes = {'grid','border'};
 
 % session types
-sessiontype = {'gain_decrease', 'gain_increase'};
+sessiontype = {'gain_decrease', 'gain_increase', 'gain_decrease_and_gain_increase'};
 
 % which gain manipulation to use
 gain_value = 0.5;
@@ -243,6 +243,9 @@ for j = 1:4
 end
 
 %% create feature matrices
+% 1: gain decrease
+% 2: gain increase
+% 3: gain decrease and gain increase
 
 % file names
 grid_fnames_all = {[],[]};
@@ -252,41 +255,75 @@ grid_fnames_all{2} = strcat('FeatStruct_',unique(uniqueID_all{3}),'.mat');
 border_fnames_all{1} = strcat('FeatStruct_',unique(uniqueID_all{2}),'.mat');
 border_fnames_all{2} = strcat('FeatStruct_',unique(uniqueID_all{4}),'.mat');
 
+
 % only keep cells that were not both grid and border cells
 keep_grid = {[],[]};
 keep_border = {[],[]};
-grid_fnames_all_filt = {[],[]};
-border_fnames_all_filt = {[],[]};
+grid_fnames_all_filt = {[],[],[]};
+border_fnames_all_filt = {[],[],[]};
 for i = 1:2
     keep_grid{i} = ~ismember(grid_fnames_all{i},border_fnames_all{i});
     keep_border{i} = ~ismember(border_fnames_all{i},grid_fnames_all{i});
     grid_fnames_all_filt{i} = grid_fnames_all{i}(keep_grid{i});
     border_fnames_all_filt{i} = border_fnames_all{i}(keep_border{i});
 end
+
+% get gain decrease and gain increase cross corrs
 crosscorr_grid_filt{1} = crosscorr_all{1}(keep_grid{1},:);
 crosscorr_border_filt{1} = crosscorr_all{2}(keep_border{1},:);
 crosscorr_grid_filt{2} = crosscorr_all{3}(keep_grid{2},:);
 crosscorr_border_filt{2} = crosscorr_all{4}(keep_border{2},:);
 
+% get cells that had both gain increases and gain decreases
+has_both_border1 = ismember(border_fnames_all_filt{1},border_fnames_all_filt{2});
+has_both_border2 = ismember(border_fnames_all_filt{2},border_fnames_all_filt{1});
+border_fnames_all_filt{3} = border_fnames_all_filt{1}(has_both_border1);
+has_both_grid1 = ismember(grid_fnames_all_filt{1},grid_fnames_all_filt{2});
+has_both_grid2 = ismember(grid_fnames_all_filt{2},grid_fnames_all_filt{1});
+grid_fnames_all_filt{3} = grid_fnames_all_filt{1}(has_both_grid1);
+
+% get cross corrs for cells that have both gain increases and gain
+% decreases
+crosscorr_grid_filt{3}{1} = crosscorr_grid_filt{1}(has_both_grid1,:);
+crosscorr_grid_filt{3}{2} = crosscorr_grid_filt{2}(has_both_grid2,:);
+crosscorr_border_filt{3}{1} = crosscorr_border_filt{1}(has_both_border1,:);
+crosscorr_border_filt{3}{2} = crosscorr_border_filt{2}(has_both_border2,:);
+
 % create and save feature matrices
-for i = 1:2
+for i = 1:3
     % grids
     n = numel(grid_fnames_all_filt{i});
     for j = 1:n
-        featStruct.cross_corr = crosscorr_grid_filt{i}(j,nbins-num_lags:nbins+num_lags);
+        if i==1 || i==2
+            featStruct.cross_corr = crosscorr_grid_filt{i}(j,nbins-num_lags:nbins+num_lags);
+            featStruct.cross_corr_gd = [];
+            featStruct.cross_corr_gi = [];
+        else
+            featStruct.cross_corr = [];
+            featStruct.cross_corr_gd = crosscorr_grid_filt{i}{1}(j,nbins-num_lags:nbins+num_lags);
+            featStruct.cross_corr_gi = crosscorr_grid_filt{i}{2}(j,nbins-num_lags:nbins+num_lags);
+        end
         save(strcat(datafolder,'FeatureMats/',sessiontype{i},'/',grid_fnames_all_filt{i}{j}), 'featStruct');
     end   
     
     % borders
     n = numel(border_fnames_all_filt{i});
     for j = 1:n
-        featStruct.cross_corr = crosscorr_border_filt{i}(j,nbins-num_lags:nbins+num_lags);
+        if i==1 || i==2
+            featStruct.cross_corr = crosscorr_border_filt{i}(j,nbins-num_lags:nbins+num_lags);
+            featStruct.cross_corr_gd = [];
+            featStruct.cross_corr_gi = [];
+        else
+            featStruct.cross_corr = [];
+            featStruct.cross_corr_gd = crosscorr_border_filt{i}{1}(j,nbins-num_lags:nbins+num_lags);
+            featStruct.cross_corr_gi = crosscorr_border_filt{i}{2}(j,nbins-num_lags:nbins+num_lags);
+        end
         save(strcat(datafolder,'FeatureMats/',sessiontype{i},'/',border_fnames_all_filt{i}{j}), 'featStruct');
     end
 end
 
 % save params
-for i = 1:2
+for i = 1:3
     grid_fnames = grid_fnames_all_filt{i};
     border_fnames = border_fnames_all_filt{i};
     save(strcat(datafolder,'FeatureMats/',sessiontype{i},'/params.mat'),'thresh','grid_fnames','border_fnames');

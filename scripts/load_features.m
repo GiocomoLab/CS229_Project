@@ -55,5 +55,13 @@ if sum(strcmp(feats,'cross_corr'))>0
     x = [x featStruct.cross_corr];
 end
 
+if sum(strcmp(feats,'cross_corr_gd'))>0
+    x = [x featStruct.cross_corr_gd];
+end
+
+if sum(strcmp(feats,'cross_corr_gi'))>0
+    x = [x featStruct.cross_corr_gi];
+end
+
 end
 
