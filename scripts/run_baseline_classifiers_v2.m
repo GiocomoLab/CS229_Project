@@ -12,7 +12,7 @@ save_results = 0;
 % get data folder
 get_data_folder;
 % datafolder = strcat(datafolder,'FeatureMats/gain_decrease_and_gain_increase');
-datafolder = strcat(datafolder,'FeatureMats/gain_increase');
+datafolder = strcat(datafolder,'FeatureMats/gain_decrease');
 
 % get file names for all cell classes
 get_fnames;

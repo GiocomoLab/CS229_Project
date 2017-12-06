@@ -1,6 +1,6 @@
 % 
 
-function [Y_train,Y_test,Y_hat_train,Y_hat_test,theta] = run_cv(X,Y,fold_inds,model_type,hyperparameters)
+function [Y_train,Y_test,Y_hat_train,Y_hat_test,theta,model_output] = run_cv(X,Y,fold_inds,model_type,hyperparameters)
    
 
 % for each fold
@@ -36,6 +36,7 @@ for fold = 1:k
         
     % build classifier based on inputs
 %    and test classifiers
+    model_output = nan;
     switch model_type
         case 'linear_svm'
             mdl = fitclinear(X_train,Y_train{fold},'Regularization',...
@@ -47,9 +48,10 @@ for fold = 1:k
         case 'logistic'
             mdl = fitclinear(X_train,Y_train{fold},'Regularization',...
                 hyperparameters{1},'Lambda',hyperparameters{2},...
-                'Learner','svm');
+                'Learner','logistic');
             Y_hat_train{fold} = predict(mdl,X_train);
             Y_hat_test{fold} = predict(mdl,X_test);
+            model_output = 1/(1+exp(-(X_test * mdl.Beta + mdl.Bias)));
             theta{fold} = mdl.Beta;
         case 'svm'
             mdl = fitcsvm(X_train,Y_train{fold},'KernelFunction',...
