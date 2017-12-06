@@ -16,9 +16,6 @@ celltypes = {'grid','border'};
 % session types
 sessiontype = {'gain_decrease', 'gain_increase', 'gain_decrease_and_gain_increase'};
 
-% which gain manipulation to use
-gain_value = 0.5;
-
 % universal params
 params = readtable('../UniversalParams.xlsx');
 nbins = (params.TrackEnd-params.TrackStart)/params.BinSize;
