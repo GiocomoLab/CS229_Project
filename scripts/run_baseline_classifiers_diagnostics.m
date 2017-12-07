@@ -15,7 +15,7 @@ tests = {{'grid', 'border'}};
 % features to use (forward search)
 forward_search_order = {{'cross_corr'}};
 % which classifiers to run
-modelTypes = {'logistic'};
+modelTypes = {'linear_svm'};
 % hyperparams for each classifier
 hyperParams = {{'ridge',0.1}};
 
@@ -53,10 +53,18 @@ for k = 1:num_runs
         results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
         
         % compute accuracy
-        cmat_train = results.logistic.cmat_train;
-        cmat_test = results.logistic.cmat_test;
+        cmat_train = results.linear_svm.cmat_train;
+        cmat_test = results.linear_svm.cmat_test;
         train_acc(k,j) = sum(diag(cmat_train))/sum(sum(cmat_train));
         test_acc(k,j) = sum(diag(cmat_test))/sum(sum(cmat_test));
         training_size(k,j) = m;
     end
 end
+
+figure;
+plot(mean(training_size),mean(test_acc),'b-')
+hold on; plot(mean(training_size),mean(train_acc),'r-')
+xlabel('training set size');
+ylabel('accuracy');
+legend({'train','test'});
+title('grid vs border (linear svm)');
