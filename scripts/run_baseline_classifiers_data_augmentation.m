@@ -70,9 +70,10 @@ for t = 1:length(tests)
     for f = 1:length(forward_search_order)
         fprintf('\tforward search %d/%d\n',f,length(forward_search_order));
         feats = forward_search_order{f};
-        [X, Y] = load_features(datafolder,{class0_fnames,class1_fnames},feats);
+        numOrigFeats = 200;
+        [Xtrain,Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numOrigFeats);
 
-        single_run_results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
+        single_run_results = batch_run_cv_data_augmentation(Xtrain,Ytrain,Xtest,YTest, numOrigFeats, feats,fold_inds,modelTypes,hyperParams);
         single_run_results.groups = tests{t};
 
         results{t,f} = single_run_results;
