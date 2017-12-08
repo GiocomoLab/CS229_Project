@@ -4,6 +4,9 @@
 
 %% params
 
+% number of features
+numFeats = 200;
+
 % use fixed random seed for debugging
 rng('default');
 
@@ -62,10 +65,9 @@ for t = 1:length(tests)
     for f = 1:length(forward_search_order)
         fprintf('\tforward search %d/%d\n',f,length(forward_search_order));
         feats = forward_search_order{f};
-        [Xtrain, Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numOrigFeats);
+        [Xtrain, Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numFeats);
         single_run_results = batch_run_cv_data_augmentation(Xtrain,Ytrain,Xtest,Ytest,feats,fold_inds,modelTypes,hyperParams);
         single_run_results.groups = tests{t};
-
         results{t,f} = single_run_results;
     end
 end

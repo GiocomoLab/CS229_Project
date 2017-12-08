@@ -2,7 +2,8 @@ function [Y_train_folds,Y_test_folds,Y_hat_train_folds,Y_hat_test_folds,theta,mo
     (Xtrain,Ytrain,Xtest,Ytest,fold_inds,model_type,hyperparameters)   
 
 % number of data augmentations
-num_aug = 400; % rotations and reflections
+rotation_offset = 10;
+num_aug = size(Xtrain,2)/rotation_offset; % rotations
 
 % outputs with entries for each fold
 k = length(fold_inds); 
@@ -14,26 +15,26 @@ theta = cell(k,1);
 
 % iterate over folds
 for fold = 1:k
-     if mod(fold,10)==1
-         fprintf('.');
-     end
+    if mod(fold,10)==1
+     fprintf('.');
+    end
 
-     inds_test = fold_inds{fold}; 
-     if fold ==1
-         inds_train = cell2mat(fold_inds(2:end));
-     elseif fold == k
-         inds_train = cell2mat(fold_inds(1:fold-1));
-     else
-         inds_train = cell2mat(fold_inds([1:fold-1 fold+1:end]));
-     end
-     inds_train = (repmat(inds_train,1,num_aug)-1).*repmat(num_aug,numel(inds_train),num_aug)+repmat(1:num_aug,numel(inds_train),1);
-     inds_train = reshape(inds_train',numel(inds_train),1);
-     % define train and test sets for this fold
-     X_train_fold = Xtrain(inds_train,:); 
-     Y_train_folds{fold} = Ytrain(inds_train);     
-     X_test_fold = Xtest(inds_test,:);     
-     Y_test_folds{fold} = Ytest(inds_test);   
-        
+    inds_test = fold_inds{fold}; 
+    if fold ==1
+     inds_train = cell2mat(fold_inds(2:end));
+    elseif fold == k
+     inds_train = cell2mat(fold_inds(1:fold-1));
+    else
+     inds_train = cell2mat(fold_inds([1:fold-1 fold+1:end]));
+    end
+    inds_train = (repmat(inds_train,1,num_aug)-1).*repmat(num_aug,numel(inds_train),num_aug)+repmat(1:num_aug,numel(inds_train),1);
+    inds_train = reshape(inds_train',numel(inds_train),1);
+    % define train and test sets for this fold
+    X_train_fold = Xtrain(inds_train,:); 
+    Y_train_folds{fold} = Ytrain(inds_train);
+    X_test_fold = Xtest(inds_test,:);
+    Y_test_folds{fold} = Ytest(inds_test);
+     
     % build classifier based on inputs and test classifiers
     model_output = nan;
     switch model_type
@@ -88,30 +89,6 @@ for fold = 1:k
             Y_hat_test_folds{fold} = Y_hat_test_folds{fold}-1;            
     end    
 end 
-
-end
-
-
-function T = Y2T(Y)
-
-numClasses = max(Y);
-
-T = zeros(numClasses,length(Y));
-for c = 1:numClasses
-    T(c,:) = double(Y==c);
-end
-
-end
-
-function Y = T2Y(T)
-
-numClasses = size(T,1);
-dummyY = [];
-for c = 1:numClasses
-    dummyY = [dummyY; (c-1)*ones(size(T,2),1)];
-end
-
-Y = squeeze(dummyY(logical(T)))';
 
 end
 

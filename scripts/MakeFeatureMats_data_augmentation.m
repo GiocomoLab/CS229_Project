@@ -1,6 +1,10 @@
 % Script to augment our dataset by rotating firing rate maps
-% (199 rotations per cell)
+% (rotations in increments of 10 bins, or 20 cm)
 % MGC 12/6/2017
+
+%% params
+numFeats = 200;
+rotation_offset = 10;
 
 %% load data
 % get data folder
@@ -39,9 +43,10 @@ end
 save(strcat(datafolder,'data_augmentation/params.mat'),'thresh','grid_fnames_aug','border_fnames_aug');
 
 %% augment data
-rotate_matrix = repmat(1:200,200,1);
-for i = 1:200
-    rotate_matrix(i,:) = circshift(rotate_matrix(i,:),i-1);
+rotations = rotation_offset*(0:(numFeats/rotation_offset-1));
+rotate_matrix = repmat(1:numFeats,numel(rotations),1);
+for i = 1:numel(rotations)
+    rotate_matrix(i,:) = circshift(rotate_matrix(i,:),rotations(i));
 end
 for i = 1:numel(files)
     fprintf('file %d/%d: %s\n',i,numel(files),files{i});
