@@ -31,43 +31,52 @@ def run_models(i,f,cell_suffix):
     #modelName = ['spikeMat','smoothSpikeMat', 'frMat_noSmooth', 'frMat']
     DATA = [frMat]
     modelName = ['frMat']
-    fig, axarr = plt.subplots(4, 3)
+    fig, axarr = plt.subplots(4, 2)
     fig.set_figheight(15)
-    fig.set_figwidth(15)
+    fig.set_figwidth(15  )
     for g, gamma in enumerate([1,10]): #[.1,1,10,30]):
 
         for m, (data, dstr) in enumerate(zip(DATA,modelName)):
-            model = TWPCA(n_components=1, smoothness=gamma)
-            model.fit(data)
-            aligned_data = model.soft_transform(data) # align to bary center
-                                            # using soft_dtw
-
-
-            axarr[g*2,m*3].imshow(np.squeeze(data),aspect='auto')
-            if m == 0:
-                axarr[g*2,m*3].set_title("%s: gamma=%f %s raw" % (cell_suffix[i],gamma,dstr))
-            else:
-                axarr[g*2,m*3].set_title("gamma=%f %s raw" % (gamma, dstr))
-            axarr[g*2,m*3+1].imshow(np.squeeze(aligned_data),aspect='auto')
-            axarr[g*2,m*3+1].set_title("%s aligned" % (dstr))
-
-
-            axarr[g*2+1,m*3].plot(data.mean(axis=0).ravel())
-            axarr[g*2+1,m*3+1].plot(model._barycenter)
-
-            axarr[g*2,m*3+2].set_title("%s hard warps" % (dstr))
-            for trial in model.hard_warps:
-                axarr[g*2,m*3+2].plot(trial[:,0], trial[:,1])
-
-
-
-            modelDict = {'model':model,'data':data,'aligned_data':aligned_data,
-            'gamma':gamma}
-
             fname_model = "%s_%g.pickle" % (dstr,gamma)
-            with open(fdirectory+fname_model, 'wb') as handle:
-                pickle.dump(modelDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    fig.show()
+            try:
+                with open(fdirectory+fname_model,'r') as z:
+                    print("file exists")
+
+            except:
+                model = TWPCA(n_components=1, smoothness=gamma)
+                model.fit(data)
+                model._hard_warps = 0 # hacky way to keep Alex's code from running hard Warps
+                                    # this is solely a time-saving measure for
+                                    #CS229 submission.. take out later
+                aligned_data = model.soft_transform(data) # align to bary center
+                                                # using soft_dtw
+
+
+                axarr[g*2,m*3].imshow(np.squeeze(data),aspect='auto')
+                if m == 0:
+                    axarr[g*2,m*3].set_title("%s: gamma=%f %s raw" % (cell_suffix[i],gamma,dstr))
+                else:
+                    axarr[g*2,m*3].set_title("gamma=%f %s raw" % (gamma, dstr))
+                axarr[g*2,m*3+1].imshow(np.squeeze(aligned_data),aspect='auto')
+                axarr[g*2,m*3+1].set_title("%s aligned" % (dstr))
+
+
+                axarr[g*2+1,m*3].plot(data.mean(axis=0).ravel())
+                axarr[g*2+1,m*3+1].plot(model._barycenter)
+
+                #axarr[g*2,m*3+2].set_title("%s hard warps" % (dstr))
+                #for trial in model.hard_warps:
+                #    axarr[g*2,m*3+2].plot(trial[:,0], trial[:,1])
+
+
+
+                modelDict = {'model':model,'data':data,'aligned_data':aligned_data,
+                'gamma':gamma}
+
+
+                with open(fdirectory+fname_model, 'wb') as handle:
+                    pickle.dump(modelDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #fig.show()
     fname_suffix = "%s_rasters.png" % (dstr)
     fig.savefig(fdirectory+fname_suffix)
 
