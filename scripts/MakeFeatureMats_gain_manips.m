@@ -1,5 +1,5 @@
-% feature structures
-% MGC 11/12/17
+% feature structures for gain manip sessions
+% MGC 12/6/17
 
 %% params
 
