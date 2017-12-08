@@ -7,15 +7,8 @@
 % use fixed random seed for debugging
 rng('default');
 
-% whether or not to make plots
-make_plots = 0;
-
-% whether or not to save results
-save_results = 0;
-
 % get data folder
 get_data_folder;
-% datafolder = strcat(datafolder,'FeatureMats/gain_decrease_and_gain_increase');
 datafolder = strcat(datafolder,'FeatureMats/data_augmentation');
 
 % get file names for all cell classes
@@ -43,7 +36,6 @@ end
 % comparisons to run
 tests = {{'grid', 'border'}};
 % features to use (forward search)
-% forward_search_order = {{'cross_corr_gd'},{'cross_corr_gi'},{'cross_corr_gd','cross_corr_gi'}};
 forward_search_order = {{'firing_rate'}};
 % which classifiers to run
 modelTypes = {'logistic','linear_svm','svm'};
@@ -56,8 +48,8 @@ results = cell(length(tests),length(forward_search_order));
 fold_inds_save = cell(length(tests),1);
 for t = 1:length(tests)
     fprintf('test %d/%d\n',t,length(tests));
-    eval(['class0_fnames = ' tests{t}{1} '_fnames;']);
-    eval(['class1_fnames = ' tests{t}{2} '_fnames;']);
+    eval(['class0_fnames = ' tests{t}{1} '_fnames_aug;']);
+    eval(['class1_fnames = ' tests{t}{2} '_fnames_aug;']);
     m = length(class0_fnames) + length(class1_fnames);
     fold_inds = build_folds(m,m);
 
@@ -70,10 +62,8 @@ for t = 1:length(tests)
     for f = 1:length(forward_search_order)
         fprintf('\tforward search %d/%d\n',f,length(forward_search_order));
         feats = forward_search_order{f};
-        numOrigFeats = 200;
-        [Xtrain,Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numOrigFeats);
-
-        single_run_results = batch_run_cv_data_augmentation(Xtrain,Ytrain,Xtest,YTest, numOrigFeats, feats,fold_inds,modelTypes,hyperParams);
+        [Xtrain, Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numOrigFeats);
+        single_run_results = batch_run_cv_data_augmentation(Xtrain,Ytrain,Xtest,Ytest,feats,fold_inds,modelTypes,hyperParams);
         single_run_results.groups = tests{t};
 
         results{t,f} = single_run_results;

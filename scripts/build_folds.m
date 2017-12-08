@@ -1,6 +1,6 @@
 function fold_inds = build_folds(N,k)
 
-%Make Folds for k-fold cross-validation
+% Make Folds for k-fold cross-validation
 order = randperm(N);
 % fill folds so that they are similar size
 fold_inds = cell(k,1);
