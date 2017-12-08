@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pickle
 from sdtw.distance import SquaredEuclidean
 from scipy.stats import linregress
+from scipy.signal import correlate
 
 
 baseDir = "/Users/markplitt/Dropbox/Malcolms_VR_data/twPCA_Mats/"
@@ -40,8 +41,11 @@ for i, fname  in enumerate(files):
     slope, intercept, r_value, p_value, std_err = linregress(x,d_norm)
     #print(slope)
     #print(r_value)
+    mean_map = np.squeeze(frMat.mean(axis=0))
+    autocorr = correlate(mean_map,mean_map)
     data = {'d':d,'slope':slope,'intercept':intercept,'r_value':r_value,
-            'p_value':p_value,'std_err':std_err}
+            'p_value':p_value,'std_err':std_err,'autocorr':autocorr,
+            'bary_center':bc,'d_norm':d_norm}
     # save vector, r^2 of fit and slope of fit
     regFeatFile = "bc_ls_%s.pickle" % (cell_suffix[i])
     with open(baseDir+regFeatFile,'wb') as handle:
