@@ -1,0 +1,19 @@
+mport scipy.io as sio
+import os
+import numpy as np
+from scipy.ndimage.filters import gaussian_filter1d
+from glob import glob
+import json
+from twpca import TWPCA
+import matplotlib.pyplot as plt
+import pickle
+from joblib import Parallel, delayed
+
+
+baseDir = "/Users/markplitt/Dropbox/Malcolms_VR_data/twPCA_Mats/"
+  files = glob(baseDir+"twPCA_*.mat")
+  cell_suffix = [i.split(baseDir+"twPCA_")[1] for i in files]
+  cell_suffix = [i.split(".mat")[0] for i in cell_suffix]
+
+  for i, f  in enumerate(files):
+      run_models(i,f,cell_suffix)
