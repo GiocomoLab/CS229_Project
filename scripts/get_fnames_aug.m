@@ -12,6 +12,7 @@ load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of
 files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
 files = {files(:).name}';
 
+grid_fnames = grid_fnames_aug;
 % find grid cells
 grid_inds = zeros(size(files));
 ngrids = length(grid_fnames);
@@ -19,6 +20,7 @@ for g = 1:length(grid_fnames)
     grid_inds = grid_inds + strcmp(files,grid_fnames{g});
 end
 
+border_fnames = border_fnames_aug;
 % find border cells
 border_inds = zeros(size(files));
 nborders = length(border_fnames);
@@ -57,13 +59,14 @@ nonborder_fnames = files(~endsWith(uniqueID_all,uniqueID_border));
 % get all grid | border cells
 gb_inds = logical(grid_inds+border_inds);
 gb_fnames = files(gb_inds);
+gb_fnames_aug = gb_fnames;
 
 % non grid | border cells
 nongb_fnames = files(~gb_inds);
 nongb_fnames = files(~endsWith(uniqueID_all,uniqueID_grid) & ~endsWith(uniqueID_all,uniqueID_border));
 
 % downsample non-functional cell types
-nongrid_ds_fnames = nongrid_fnames(randperm(length(nongrid_fnames),length(grid_fnames)));
-nonborder_ds_fnames = nonborder_fnames(randperm(length(nonborder_fnames),length(border_fnames)));
-nongb_ds_fnames = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));
-nongb_ds_fnames = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));
+nongrid_ds_fnames_aug = nongrid_fnames(randperm(length(nongrid_fnames),length(grid_fnames)));
+nonborder_ds_fnames_aug = nonborder_fnames(randperm(length(nonborder_fnames),length(border_fnames)));
+nongb_ds_fnames_aug = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));
+nongb_ds_fnames_aug = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));

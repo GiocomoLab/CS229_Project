@@ -7,23 +7,26 @@
 make_plots = 0;
 
 % whether or not to save results
-save_results = 0;
+save_results = 1;
 
 % get data folder
 get_data_folder;
-datafolder = strcat(datafolder,'FeatureMats'); 
+% datafolder = strcat(datafolder,'FeatureMats/gain_decrease_and_gain_increase');
+datafolder = strcat(datafolder,'FeatureMats/gain_decrease');
+sessions = 'gain_decrease';
 
 % get file names for all cell classes
-get_fnames;
+get_fnames_gainmanip;
 
 % comparisons to run
-tests = {{'gb','nongb_ds'},{'grid','nongrid_ds'},{'grid','border'}};
+tests = {{'grid', 'border'}};
 % features to use (forward search)
-forward_search_order = {{'time_warp'}};
+% forward_search_order = {{'cross_corr_gd'},{'cross_corr_gi'},{'cross_corr_gd','cross_corr_gi'}};
+forward_search_order = {{'cross_corr'}};
 % which classifiers to run
-modelTypes = {'logistic','linear_svm','svm'};
+modelTypes = {'logistic','linear_svm','svm','gda'};
 % hyperparams for each classifier
-hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'}};
+hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'},{}};
 
 %% train classifiers
 
@@ -44,7 +47,7 @@ for t = 1:length(tests)
 
     for f = 1:length(forward_search_order)
         fprintf('\tforward search %d/%d\n',f,length(forward_search_order));
-        feats = forward_search_order{f};
+        feats = forward_search_order{f}
         [X, Y] = load_features(datafolder,{class0_fnames,class1_fnames},feats);
 
         single_run_results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
@@ -78,13 +81,19 @@ for i =  1:length(tests)
         cmat_test = results{i,j}.svm.cmat_test;
         train_acc(i,j,3) = sum(diag(cmat_train))/sum(sum(cmat_train));
         test_acc(i,j,3) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+        % gda 
+        cmat_train = results{i,j}.gda.cmat_train;
+        cmat_test = results{i,j}.gda.cmat_test;
+        train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
     end
 end
 
 %% save results
 
 if save_results
-    save baseline_classifier_results.mat results fold_inds train_acc test_acc
+    save(sprintf('baseline_classifier_%s_results.mat', sessions),'results','fold_inds','train_acc','test_acc')
 end
 
 %% make plots

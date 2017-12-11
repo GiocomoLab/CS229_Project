@@ -17,6 +17,7 @@ datafolder = strcat(datafolder,'FeatureMats/data_augmentation');
 % get file names for all cell classes
 % Get all grid cells  
 load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of grid cells
+get_fnames_aug;
 
 % get all files names
 files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
@@ -37,13 +38,13 @@ for b = 1:length(border_fnames_aug)
 end
 
 % comparisons to run
-tests = {{'grid', 'border'}};
+tests = {{'grid','border'},{'gb', 'nongb_ds'},{'grid','nongrid_ds'},{'border','nonborder_ds'}};
 % features to use (forward search)
 forward_search_order = {{'firing_rate'}};
 % which classifiers to run
-modelTypes = {'logistic','linear_svm','svm'};
+modelTypes = {'logistic','linear_svm','svm','gda'};
 % hyperparams for each classifier
-hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'}};
+hyperParams = {{'ridge',1e2},{'ridge',1e2},{'rbf'},{}};
 
 %% train classifiers
 
@@ -96,5 +97,11 @@ for i =  1:length(tests)
         cmat_test = results{i,j}.svm.cmat_test;
         train_acc(i,j,3) = sum(diag(cmat_train))/sum(sum(cmat_train));
         test_acc(i,j,3) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+        % gda 
+        cmat_train = results{i,j}.gda.cmat_train;
+        cmat_test = results{i,j}.gda.cmat_test;
+        train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
     end
 end
