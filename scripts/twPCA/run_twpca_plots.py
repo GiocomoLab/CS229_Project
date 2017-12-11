@@ -57,3 +57,4 @@ for i, f  in enumerate(files):
     plt.suptitle(cell_suffix[i])
     #plt.show()
     fig.savefig(baseDir+'timeWarpFeats_'+cell_suffix[i]+'.png')
+    #fig.close()
