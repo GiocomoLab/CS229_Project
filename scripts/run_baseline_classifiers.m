@@ -19,11 +19,11 @@ get_fnames;
 % comparisons to run
 tests = {{'gb','nongb_ds'},{'grid','nongrid_ds'},{'grid','border'}};
 % features to use (forward search)
-forward_search_order = {{'time_warp'}};
+forward_search_order = {{'fr','mean_fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'}};
 % which classifiers to run
-modelTypes = {'logistic','linear_svm','svm'};
+modelTypes = {'logistic','linear_svm','svm','gda',};
 % hyperparams for each classifier
-hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'}};
+hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'},{}};
 
 %% train classifiers
 
@@ -78,6 +78,12 @@ for i =  1:length(tests)
         cmat_test = results{i,j}.svm.cmat_test;
         train_acc(i,j,3) = sum(diag(cmat_train))/sum(sum(cmat_train));
         test_acc(i,j,3) = sum(diag(cmat_test))/sum(sum(cmat_test));
+        
+        % gda
+        cmat_train = results{i,j}.gda.cmat_train;
+        cmat_test = results{i,j}.gda.cmat_test;
+        train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
+        test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
     end
 end
 

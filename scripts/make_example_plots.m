@@ -8,8 +8,8 @@ addpath(genpath('functions/'));
 get_data_folder;
 
 % figures
-make_figures = 0;
-save_figures = 0;
+make_figures = 1;
+save_figures = 1;
 
 % mice with bursty, drifty spatial cells
 mice = {'Barbara','Biggie','Christina','JLo','LilKim','Rihanna','Shakira','Winehouse'};
@@ -99,12 +99,16 @@ for i = 1:N
         feat.fieldsize(counter) = params.BinSize*(find(firing_rate_autocorr<thresh.autocorr,1)-1);       
 
         if make_figures
-            h = figure('Visible','off');           
+            h = figure('Visible','off');        
+            subplot(2,1,1);
+            plot(1:2:399,firing_rate,'r-');
+            xlim([params.TrackStart params.TrackEnd]);
+            subplot(2,1,2);
             plot(posx(idx),trial(idx),'r.','MarkerSize',10);
             xlim([params.TrackStart params.TrackEnd]);
             ylim([0 max(trial)+1]);
             if save_figures
-                saveas(h,sprintf('plots/all_cells/unlabeled/%s_%s_%s_%d.png',A.UniqueID{i},A.SessionVR{i},A.Cell{i},j),'png');
+                saveas(h,sprintf('plots/all_cells/unlabeled/%s_%s_%s_%d.pdf',A.UniqueID{i},A.SessionVR{i},A.Cell{i},j),'pdf');
                 title(sprintf('rate=%0.1f, isi=%0.3f, b=%0.3f\nstab=%0.3f, stabtrial=%0.3f, ratio=%0.3f\nfieldsize=%d',...
                     feat.meanrate(counter), feat.median_isi(counter), feat.burstiness(counter), ...
                     feat.stability(counter), feat.stability_trial(counter), feat.stability_ratio(counter), ...
