@@ -24,6 +24,15 @@ thresh.border = 0.523; % border score
 thresh.grid = 0.349; % grid score
 thresh.inter = 10; % firing rate to identify interneurons
 
+% shift matrix for data augmentation
+numFeats = 200; % number of spatial bins
+rotation_offset = 10; % "center" of data shifts
+rotations = rotation_offset*(0:(numFeats/rotation_offset-1));
+rotate_matrix = repmat(1:numFeats,numel(rotations),1);
+for i = 1:numel(rotations)
+    rotate_matrix(i,:) = circshift(rotate_matrix(i,:),rotations(i));
+end
+
 %% identify cell types
 inter = A.MeanRateOF > thresh.inter;
 grid = find(A.GridScore > thresh.grid & ~inter);
@@ -54,8 +63,11 @@ for b = 1:numel(border)
 end
 
 save(strcat(datafolder,'/params.mat'),'thresh','border_fnames','grid_fnames');
-%% analyze drift: grid cells
-% lag_grid = nan(size(grid));
+%% extract features and save
+
+
+
+
 lag = nan(numel(A.UniqueID),1);
 for j = 1:numel(A.UniqueID)
 
@@ -99,6 +111,9 @@ for j = 1:numel(A.UniqueID)
     % compute firing rate
     firing_rate = calculateSmoothedFiringRate(idx,posx,dt,params);
     featStruct.firing_rate = firing_rate;
+    
+    % augment firing rate maps 
+    featStruct.firing_rate_aug = featStruct.firing_rate(rotate_matrix);
 
     % compute single trial cross-correlations
     fr_corr = nan(max(trial)-1,num_lags*2+1);

@@ -59,11 +59,9 @@ gb_inds = logical(grid_inds+border_inds);
 gb_fnames = files(gb_inds);
 
 % non grid | border cells
-nongb_fnames = files(~gb_inds);
 nongb_fnames = files(~endsWith(uniqueID_all,uniqueID_grid) & ~endsWith(uniqueID_all,uniqueID_border));
 
 % downsample non-functional cell types
 nongrid_ds_fnames = nongrid_fnames(randperm(length(nongrid_fnames),length(grid_fnames)));
 nonborder_ds_fnames = nonborder_fnames(randperm(length(nonborder_fnames),length(border_fnames)));
-nongb_ds_fnames = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));
 nongb_ds_fnames = nongb_fnames(randperm(length(nongb_fnames),length(gb_fnames)));

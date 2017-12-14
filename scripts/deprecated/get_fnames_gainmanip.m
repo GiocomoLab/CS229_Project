@@ -2,7 +2,6 @@
 % MGC 12/5/2017
 
 % use fixed random seed for debugging
-
 rng('default');
 
 % Get all grid cells  

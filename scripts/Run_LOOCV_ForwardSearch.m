@@ -14,6 +14,7 @@ get_data_folder;
 datafolder = strcat(datafolder,'FeatureMats'); 
 
 % get file names for all cell classes
+% and downsample more prevalent class to match 
 get_fnames;
 
 % comparisons to run

@@ -62,7 +62,6 @@ gb_fnames = files(gb_inds);
 gb_fnames_aug = gb_fnames;
 
 % non grid | border cells
-nongb_fnames = files(~gb_inds);
 nongb_fnames = files(~endsWith(uniqueID_all,uniqueID_grid) & ~endsWith(uniqueID_all,uniqueID_border));
 
 % downsample non-functional cell types
