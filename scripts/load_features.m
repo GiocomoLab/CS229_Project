@@ -25,6 +25,17 @@ if isempty(feats)
 end
 
 load(fname);
+
+% %%% hacky solution to get time warp features in without rewriting a bunch of stuff
+% C = strsplit(fname,'Malcolms_VR_Data');
+% cell_suffix = strsplit(fname,'FeatStruct_');
+% 
+% twPCAStr = fullfile(C{1},'Malcolms_VR_Data','twPCA_Mats',strcat('bc_ls_',cell_suffix{end}(1:end-4),'*'));
+% files = dir(twPCAStr);
+% twPCAMat = files(1).name;
+% load(fullfile(C{1},'Malcolms_VR_Data','twPCA_Mats',twPCAMat));
+% %%%
+
 x=[];
 
 if sum(strcmp(feats,'fr'))>0
@@ -62,6 +73,10 @@ end
 if sum(strcmp(feats,'cross_corr_gi'))>0
     x = [x featStruct.cross_corr_gi];
 end
+
+% if sum(strcmp(feats,'time_warp'))>0
+%     x = [ x slope intercept r_value^2 p_value mean(d) var(d)];
+% end
 
 end
 

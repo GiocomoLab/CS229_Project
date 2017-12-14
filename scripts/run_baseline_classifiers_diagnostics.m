@@ -8,7 +8,7 @@ get_data_folder;
 datafolder = strcat(datafolder,'FeatureMats/gain_increase');
 
 % get file names for all cell classes
-get_fnames;
+get_fnames_gain_manip;
 
 % comparisons to run
 tests = {{'grid', 'border'}};
