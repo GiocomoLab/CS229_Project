@@ -9,6 +9,13 @@ feats = readtable('labeled_dataset_large.xlsx');
 X = table2array(feats(:,[3:6 8:10]));
 Y = 1*(table2array(feats(:,11))>0);
 
+% numDB = sum(Y==1);
+% X_0 = X(Y==0,:);
+% X_1 = X(Y==1,:);
+% X_0_ds = X_0(randperm(size(X_0,1),numDB),:);
+% X = [X_0_ds; X_1];
+% Y = [zeros(numDB,1); ones(numDB,1)];
+
 % timeWarpFeats = [];cellIDs = table2array(feats(:,2));
 % for cell = 1:size(feats,1)
 %     load(fullfile('/Users/markplitt/Dropbox/Malcolms_VR_data/twPCA_Mats/',strcat('bc_ls_',cellIDs{cell}(1:end-2),'.mat')));
