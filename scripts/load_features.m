@@ -1,12 +1,21 @@
+% load feature matrices and assign labels
+% INPUTS:
+%   datafolder - directory where all feature structures are saved
+%   class_fnames - 2x1 cell array where each index is itself a cell array
+%   of filenames for each class
+%   feats - cell array of strings for each set of features to be included
+% OUTPUTS:
+%   X - data matrix
+%   Y - labels
 
 
 function [X, Y] = load_features(datafolder,class_fnames,feats)
 
 X = []; Y = [];
-for i = 1:length(class_fnames)
+for i = 1:length(class_fnames) % for each class
     
-    for f = 1:length(class_fnames{i})
-        X = [X; load_single_sub(fullfile(datafolder,class_fnames{i}{f}),feats)];
+    for f = 1:length(class_fnames{i}) % for each file
+        X = [X; load_single_cell(fullfile(datafolder,class_fnames{i}{f}),feats)];
         Y = [Y;i-1];
     end
 end
@@ -16,9 +25,8 @@ end
         
  
 
-
-
-function x = load_single_sub(fname, feats)
+% actually load the data for a single session
+function x = load_single_cell(fname, feats)
 
 if isempty(feats)
     feats = {'fr','mean_fr_ccorr','ccorr_peak','fr_dft_abs'};

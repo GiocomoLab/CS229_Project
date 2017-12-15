@@ -1,4 +1,4 @@
-
+% load feature matrices 
 
 function [X, Y] = load_features(datafolder,class_fnames,feats)
 

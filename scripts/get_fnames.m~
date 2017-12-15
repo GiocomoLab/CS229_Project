@@ -1,5 +1,5 @@
-% Script to load file names for feature matrices and downsample more
-% prevalent cell classes
+% Script to load file names for feature matrices
+% MGC 12/5/2017
 
 % use fixed random seed for debugging
 

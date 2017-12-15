@@ -1,5 +1,15 @@
 %%% loop over model types and hyperparameter sets and run cross validation
-function results = batch_simple_classifiers(X,Y,feats,fold_inds,modelTypes,hyperParams)
+% INPUTS:
+%   X - feature matrices (samples x feature)
+%   Y - class labels
+%   fold_inds - cell array with indices of each fold
+%   modelTypes - cell array of models to test
+%   hyperParams - cell array with values of regularization parameters
+
+%  OUTPUTS:
+%   results - cellarray of structures containing all output from cross_val
+
+function results = batch_classifiers(X,Y,feats,fold_inds,modelTypes,hyperParams)
 
 
 for i = 1:length(modelTypes)

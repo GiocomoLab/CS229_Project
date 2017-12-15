@@ -9,9 +9,7 @@
 %   Y_train - true class labels training data for each fold
 %   Y_test - true class labels fors test data for each fold
 %   Y_hat_train - predicted class labels on training data for each fold
-%   Y_hat_test - predicted class labels on test data for each fold
-%   theta - model parameters for linear models
-%   model_output - value of hypothesis function
+%   Y_hat_test
 
 
 function [Y_train,Y_test,Y_hat_train,Y_hat_test,theta,model_output] = cross_val(X,Y,fold_inds,model_type,hyperparameters)
