@@ -1,3 +1,5 @@
+# use the TWPCA module (https://github.com/ganguli-lab/twpca/tree/v2alt/twpca)
+# to run soft DTW and get bary center for each trial's spatial firing rate map
 import scipy.io as sio
 import os
 import numpy as np
@@ -18,9 +20,11 @@ def run_models(i,f,cell_suffix):
 
     matDat = sio.loadmat(f)
 
+    #get actual spike matrix - to warp time instead of space
     #spikeMat = np.expand_dims(matDat['timeSpikeMat'],axis=2)
     #spikeMat[np.isnan(spikeMat)]=0. # impute nans
 
+    # smooth the spikes
     #smoothSpikeMat = gaussian_filter1d(spikeMat,5,axis = 1)
     #smoothSpikeMat[np.isnan(spikeMat)]=0.
 
@@ -46,8 +50,7 @@ def run_models(i,f,cell_suffix):
                 model = TWPCA(n_components=1, smoothness=gamma)
                 model.fit(data)
                 model._hard_warps = 0 # hacky way to keep Alex's code from running hard Warps
-                                    # this is solely a time-saving measure for
-                                    #CS229 submission.. take out later
+                                    
                 aligned_data = model.soft_transform(data) # align to bary center
                                                 # using soft_dtw
 

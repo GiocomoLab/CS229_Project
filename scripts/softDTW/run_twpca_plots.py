@@ -1,3 +1,4 @@
+# plot raw and aligned data for every cell to check overfitting by eye
 import scipy.io as sio
 import os
 import numpy as np
@@ -9,7 +10,7 @@ from twpca import TWPCA
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 import pickle
-from joblib import Parallel, delayed
+
 
 
 baseDir = "/Users/markplitt/Dropbox/Malcolms_VR_data/twPCA_Mats/"

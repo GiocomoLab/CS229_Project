@@ -1,8 +1,11 @@
-# load file names
+# make a set of features from the barycenter average of the time series.
+# calculate the distance of each trial from the bary center.
+# give the distance a sign based on the center of mass of the single trial
+# alignment matrix and fit a line to the resulting vector. Drift is
+# presumed to accumulate over time
 import scipy.io as sio
 import os
 import numpy as np
-
 from glob import glob
 import json
 from twpca import TWPCA
@@ -20,19 +23,14 @@ cell_suffix = [i.split(".mat")[0] for i in cell_suffix]
 
 
 for i, fname  in enumerate(files):
+    # load data
     print(fname)
     matDat = sio.loadmat(fname)
     fdirectory = baseDir+cell_suffix[i]+"/"
     fname_model = "frMat_10.pickle"
     with open(fdirectory+fname_model,'rb') as handle:
         modelDict = pickle.load(handle)
-
-    #regFeatFile = "bc_ls_%s" % (cell_suffix[i])
-    #sio.savemat(baseDir+ regFeatFile+".mat",data)
-    #bc = sio.loadmat(baseDir+regFeatFile+".mat")['bary_center']
-    #print(bc.keys())
     frMat = matDat['frTrialMat']
-    #bc = np.array(bc['firing_rate_mean_warp'])
 
     # get pairwise difference between individual trials and _barycenter
     d = []
@@ -46,15 +44,13 @@ for i, fname  in enumerate(files):
             else:
                 d.append(np.power(x - modelDict['model']._barycenter.ravel(),2).sum())
     d = np.array(d)
+    # normalize
     d_norm = np.divide(d-d.min(),d.max()-d.min())
-    #print(d_norm)
     x = np.linspace(0,1,d.size)
 
 
     # fit line to vector
     slope, intercept, r_value, p_value, std_err = linregress(x,d_norm)
-    #print(slope)
-    #print(r_value)
     mean_map = np.squeeze(frMat.mean(axis=0))
     autocorr = correlate(mean_map,mean_map)
     data = {'d':d,'slope':slope,'intercept':intercept,'r_value':r_value,
@@ -63,5 +59,3 @@ for i, fname  in enumerate(files):
     # save vector, r^2 of fit and slope of fit
     regFeatFile = "bc_ls_%s" % (cell_suffix[i])
     sio.savemat(baseDir+ regFeatFile+".mat",data)
-    #with open(baseDir+regFeatFile+".pickle",'wb') as handle:
-    #    pickle.dump(data,handle,protocol=pickle.HIGHEST_PROTOCOL)

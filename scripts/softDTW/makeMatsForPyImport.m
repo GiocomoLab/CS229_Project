@@ -1,8 +1,8 @@
-% Make matrices for each neuron that are trial x timepoint
-% MGC 11/12/17
+%  make feature matrices for use with soft dynamic time warping
 
 %% params
 addpath('/Users/markplitt/repos/CS229_Project/scripts/');
+
 % get data folder
 mp_prefix = '~/Dropbox/Malcolms_VR_Data/';
 mc_prefix1 = '/Users/malcg/Dropbox/Work/Malcolms_VR_data/';
@@ -33,8 +33,6 @@ grid = find(A.GridScore > thresh.grid & ~inter);
 border = find(A.BorderScore > thresh.border & ~ inter);
 
 % take one recording from each unique grid and border cell.
-% might want to make it so that it's not always the first recording from
-% each cell, but let's do this for now.
 [~,uniq_idx_grid] = unique(A.UniqueID(grid));
 [~,uniq_idx_border] = unique(A.UniqueID(border));
 grid = grid(uniq_idx_grid);
@@ -81,7 +79,6 @@ for j = 1:numel(A.UniqueID)
     spike_t = celldata.bl.spike_t{1};
     
    
-    
     % throw out last trial (incomplete for some data)
     posx = posx(trial<max(trial));
     post = post(trial<max(trial));
@@ -131,7 +128,7 @@ for j = 1:numel(A.UniqueID)
         dt_i = dt(trial==i-1);
         idx_i = idx(trial(idx)==i-1);
         idx_i = idx_i - sum(trial<i-1);
-%         [smooth_firing_rate, firing_rate] = calculateFiringRate(idx_i,posx_i,dt_i,params);
+
         [frTrialMat(i,:),frTrialMat_noSmooth(i,:)]= calculateFiringRate(idx_i,posx_i,dt_i,params);
        
     end

@@ -8,7 +8,10 @@ function [smooth_firing_rate,firing_rate] = calculateFiringRate(idx,posx,dt,p,bi
 % Average frame length is computed in each position bin separately.
 % Also made firing rate computed by fixed bin edges rather than number of
 % bins.
-    
+
+% edit 12/1/2017 MP
+% add raw firing rate map as output
+
     noTaper = 1; % smooths to avoid taper at ends
     if ~exist('p','var')
         p = readtable('UniversalParams.xlsx');   
