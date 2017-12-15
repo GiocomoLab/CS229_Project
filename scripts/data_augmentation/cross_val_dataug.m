@@ -1,4 +1,24 @@
-function [Y_train_folds,Y_test_folds,Y_hat_train_folds,Y_hat_test_folds,theta,model_output] = run_cv_data_augmentation...
+%  run K fold cross-validation for data augmentation,
+%   ***augmented data from a given test cell is not included in the training
+%   set***
+% 
+%  INPUTS:
+%   Xtrain - augmented feature matrices of entire data set (samples x features)
+%   Xtest - original data from all cells
+%   Ytrain - sample labels for augmented data (samples x 1) 
+%   fold_inds - cell array, each cell contains indices of fold
+%   model_type - string indicating which model to run
+%   hyperparameters - cell array containing regularization types and strengths
+%  OUTPUTS:
+%   Y_train_folds - true class labels training data for each fold
+%   Y_test_folds - true class labels fors test data for each fold
+%   Y_hat_train_folds - predicted class labels on training data for each fold
+%   Y_hat_test_folds - predicted class labels on test data for each fold
+%   theta - model parameters for linear models
+%   model_output - value of hypothesis function
+
+
+function [Y_train_folds,Y_test_folds,Y_hat_train_folds,Y_hat_test_folds,theta,model_output] = cross_val_dataug...
     (Xtrain,Ytrain,Xtest,Ytest,fold_inds,model_type,hyperparameters)   
 
 % number of data augmentations
@@ -27,25 +47,27 @@ for fold = 1:k
     else
      inds_train = cell2mat(fold_inds([1:fold-1 fold+1:end]));
     end
-    inds_train = (repmat(inds_train,1,num_aug)-1).*repmat(num_aug,numel(inds_train),num_aug)+repmat(1:num_aug,numel(inds_train),1);
+    inds_train = (repmat(inds_train,1,num_aug)-1).*repmat(num_aug,numel(inds_train),num_aug)+...
+        repmat(1:num_aug,numel(inds_train),1);
     inds_train = reshape(inds_train',numel(inds_train),1);
+    
     % define train and test sets for this fold
     X_train_fold = Xtrain(inds_train,:); 
     Y_train_folds{fold} = Ytrain(inds_train);
     X_test_fold = Xtest(inds_test,:);
     Y_test_folds{fold} = Ytest(inds_test);
      
-    % build classifier based on inputs and test classifiers
+    % build classifier objects, train, and test
     model_output = nan;
     switch model_type
-        case 'linear_svm'
+        case 'linear_svm' % linear SVM, can change regularization strength
             mdl = fitclinear(X_train_fold,Y_train_folds{fold},'Regularization',...
                 hyperparameters{1},'Lambda',hyperparameters{2},...
                 'Learner','svm');
             Y_hat_train_folds{fold} = predict(mdl,X_train_fold);
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);
             theta{fold} = mdl.Beta;
-        case 'logistic'
+        case 'logistic' % regularized logistic regression
             mdl = fitclinear(X_train_fold,Y_train_folds{fold},'Regularization',...
                 hyperparameters{1},'Lambda',hyperparameters{2},...
                 'Learner','logistic');
@@ -53,27 +75,27 @@ for fold = 1:k
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);
             model_output = 1/(1+exp(-(X_test_fold * mdl.Beta + mdl.Bias)));
             theta{fold} = mdl.Beta;
-        case 'svm'
+        case 'svm' % kernel svm
             mdl = fitcsvm(X_train_fold,Y_train_folds{fold},'KernelFunction',...
                 hyperparameters{1},'KernelScale','auto');
             Y_hat_train_folds{fold} = predict(mdl,X_train_fold);
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);
-        case 'gda'
+        case 'gda' % gaussian discriminant analysis
             mdl = fitcdiscr(X_train_fold,Y_train_folds{fold});
             Y_hat_train_folds{fold} = predict(mdl,X_train_fold);
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);           
-        case 'qda'
+        case 'qda' % quadratic discriminant analysis
             mdl = fitcdiscr(X_train_fold,Y_train_folds{fold},'DiscrimType','quadratic');
             Y_hat_train_folds{fold} = predict(mdl,X_train_fold);
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);            
-        case 'mc_linear_svm'
+        case 'mc_linear_svm' % multiclass linear svm
             t = templateLinear('Learner','svm',....
                 'Regularization',hyperparameters{1},'Lambda',hyperparameters{2});           
             mdl = fitcecoc(X_train_fold,Y_train_folds{fold},'Learners',t);
             Y_hat_train_folds{fold} = predict(mdl,X_train_fold);
             Y_hat_test_folds{fold} = predict(mdl,X_test_fold);
             theta{fold} = mdl.Beta;            
-        case 'mc_svm'
+        case 'mc_svm' % multiclass kernel svm
             t = templateSVM('Standardize',1,'KernelFunction',hyperparameters{1},...
                 'KernelScale','auto');
             mdl = fitcecoc(X_train_fold,Y_train_folds{fold},'Learners',t);            

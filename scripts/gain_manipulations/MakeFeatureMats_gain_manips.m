@@ -1,5 +1,5 @@
 % feature structures for gain manip sessions
-% MGC 12/6/17
+
 
 %% params
 
@@ -7,7 +7,7 @@
 get_data_folder;
 
 % load table with recording information
-A = readtable('../allCells.csv');
+A = readtable('../../allCells.csv');
 A = A(strcmp(A.SessionTypeVR,'gain_manip'),:);
 
 % celltypes

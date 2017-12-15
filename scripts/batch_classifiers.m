@@ -25,7 +25,7 @@ for i = 1:length(modelTypes)
     eval(['results.' modelTypes{i} '.theta = theta;']);
     eval(['results.' modelTypes{i} '.hyperparams = hyperParams{i};']);
 
-    
+    % save confusion matrices for each classification
     cmat_train = confusionmat(cell2mat(Y_train),cell2mat(Y_hat_train));
     cmat_test = confusionmat(cell2mat(Y_test),cell2mat(Y_hat_test));
     eval(['results.' modelTypes{i} '.cmat_train = cmat_train;']);

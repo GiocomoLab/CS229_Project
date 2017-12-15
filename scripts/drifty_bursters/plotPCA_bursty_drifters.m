@@ -1,4 +1,4 @@
-% Plot PCs of drifty bursters
+% Plot PCs of drifty bursters to see approximately how well we should do
 
 % get data
 feats = readtable('labeled_dataset_large.xlsx');
@@ -13,6 +13,7 @@ X = zscore(X,[],1);
 % get projections
 Xred = X*COEFF;
 
+% plot classes in 2D and 3D
 figure; hold on;
 scatter(Xred(Y==0,1),Xred(Y==0,2),[],'rx')
 scatter(Xred(Y==1,1),Xred(Y==1,2),[],'bo')

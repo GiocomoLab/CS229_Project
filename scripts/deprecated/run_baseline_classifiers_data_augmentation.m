@@ -1,32 +1,48 @@
-% script to run baseline classifiers
-% MGC 12/5/2017
+% 
 
 %% params
 
-% whether or not to make plots
-make_plots = 0;
+% number of features
+numFeats = 200;
 
-% whether or not to save results
-save_results = 1;
+% use fixed random seed for debugging
+rng('default');
 
 % get data folder
 get_data_folder;
-% datafolder = strcat(datafolder,'FeatureMats/gain_decrease_and_gain_increase');
-datafolder = strcat(datafolder,'FeatureMats/gain_decrease');
-sessions = 'gain_decrease';
+datafolder = strcat(datafolder,'FeatureMats/data_augmentation');
 
 % get file names for all cell classes
-get_fnames_gainmanip;
+% Get all grid cells  
+load(fullfile(datafolder,'params.mat')); % includes cell array with filenames of grid cells
+get_fnames_aug;
+
+% get all files names
+files = dir(fullfile(datafolder,'FeatStruct_*.mat'));
+files = {files(:).name}';
+
+% find grid cells
+grid_inds = zeros(size(files));
+ngrids = length(grid_fnames_aug);
+for g = 1:length(grid_fnames_aug)
+    grid_inds = grid_inds + strcmp(files,grid_fnames_aug{g});
+end
+
+% find border cells
+border_inds = zeros(size(files));
+nborders = length(border_fnames_aug);
+for b = 1:length(border_fnames_aug)
+    border_inds = border_inds + strcmp(files,border_fnames_aug{b});
+end
 
 % comparisons to run
-tests = {{'grid', 'border'}};
+tests = {{'grid','border'},{'gb', 'nongb_ds'},{'grid','nongrid_ds'},{'border','nonborder_ds'}};
 % features to use (forward search)
-% forward_search_order = {{'cross_corr_gd'},{'cross_corr_gi'},{'cross_corr_gd','cross_corr_gi'}};
-forward_search_order = {{'cross_corr'}};
+forward_search_order = {{'firing_rate'}};
 % which classifiers to run
 modelTypes = {'logistic','linear_svm','svm','gda'};
 % hyperparams for each classifier
-hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'},{}};
+hyperParams = {{'ridge',1e2},{'ridge',1e2},{'rbf'},{}};
 
 %% train classifiers
 
@@ -34,8 +50,8 @@ results = cell(length(tests),length(forward_search_order));
 fold_inds_save = cell(length(tests),1);
 for t = 1:length(tests)
     fprintf('test %d/%d\n',t,length(tests));
-    eval(['class0_fnames = ' tests{t}{1} '_fnames;']);
-    eval(['class1_fnames = ' tests{t}{2} '_fnames;']);
+    eval(['class0_fnames = ' tests{t}{1} '_fnames_aug;']);
+    eval(['class1_fnames = ' tests{t}{2} '_fnames_aug;']);
     m = length(class0_fnames) + length(class1_fnames);
     fold_inds = build_folds(m,m);
 
@@ -47,12 +63,10 @@ for t = 1:length(tests)
 
     for f = 1:length(forward_search_order)
         fprintf('\tforward search %d/%d\n',f,length(forward_search_order));
-        feats = forward_search_order{f}
-        [X, Y] = load_features(datafolder,{class0_fnames,class1_fnames},feats);
-
-        single_run_results = batch_run_cv(X,Y,feats,fold_inds,modelTypes,hyperParams);
+        feats = forward_search_order{f};
+        [Xtrain, Ytrain, Xtest, Ytest] = load_features_data_augmentation(datafolder,{class0_fnames,class1_fnames},numFeats);
+        single_run_results = batch_run_cv_data_augmentation(Xtrain,Ytrain,Xtest,Ytest,feats,fold_inds,modelTypes,hyperParams);
         single_run_results.groups = tests{t};
-
         results{t,f} = single_run_results;
     end
 end
@@ -87,33 +101,5 @@ for i =  1:length(tests)
         cmat_test = results{i,j}.gda.cmat_test;
         train_acc(i,j,4) = sum(diag(cmat_train))/sum(sum(cmat_train));
         test_acc(i,j,4) = sum(diag(cmat_test))/sum(sum(cmat_test));
-    end
-end
-
-%% save results
-
-if save_results
-    save(sprintf('baseline_classifier_%s_results.mat', sessions),'results','fold_inds','train_acc','test_acc')
-end
-
-%% make plots
-
-if make_plots
-    % Sanity check: look at correctly and incorrectly classified cells
-    fold_inds_save = fold_inds_save{1};
-    [~,sort_idx]=sort(fold_inds_save);
-    true_label = nan(size(fold_inds_save));
-    classifier_label = nan(size(fold_inds_save));
-    for i = 1:size(fold_inds_save,1)
-        true_label(i) = results{1,1}.svm.Y_test{i};
-        classifier_label(i) = results{1,1}.svm.Y_hat_test{i};
-    end
-    true_label = true_label(sort_idx);
-    classifier_label = classifier_label(sort_idx);
-    for i = 1:size(fold_inds_save,1)
-        h = figure('Visible','off');
-        plot(1:2:399,X(i,1:200));
-        title(sprintf('true label=%d, classifier label=%d',true_label(i),classifier_label(i)));
-        saveas(h,sprintf('sanity_check_plots/%d.png',i),'png')
     end
 end

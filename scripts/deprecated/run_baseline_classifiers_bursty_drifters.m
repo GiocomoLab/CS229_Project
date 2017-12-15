@@ -1,20 +1,13 @@
 % script to run baseline classifiers
 % on "bursty drifting spatial cells"
-% MGC 12/10/2017
 
 %% params
 
+addpath ../
 % get data
 feats = readtable('labeled_dataset_large.xlsx');
 X = table2array(feats(:,[3:6 8:10]));
 Y = 1*(table2array(feats(:,11))>0);
-
-% timeWarpFeats = [];cellIDs = table2array(feats(:,2));
-% for cell = 1:size(feats,1)
-%     load(fullfile('/Users/markplitt/Dropbox/Malcolms_VR_data/twPCA_Mats/',strcat('bc_ls_',cellIDs{cell}(1:end-2),'.mat')));
-%     timeWarpFeats = [timeWarpFeats; slope intercept slope intercept r_value^2 p_value mean(d) var(d)];
-% end
-% X = [X timeWarpFeats];
 
 % which classifiers to run
 modelTypes = {'logistic','linear_svm','svm','gda'};
@@ -25,7 +18,7 @@ hyperParams = {{'ridge',0.1},{'ridge',0.1},{'rbf'},{}};
 %% train classifiers
 m = size(X,1);
 fold_inds = build_folds(m,m);
-results = batch_run_cv(X,Y,[],fold_inds,modelTypes,hyperParams);
+results = batch_classifiers(X,Y,[],fold_inds,modelTypes,hyperParams);
 
 %% evaluate classifiers
 
